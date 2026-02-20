@@ -1,0 +1,11 @@
+[Unit]
+Description=☁️ Cloud 9 Protocol Auto-Rehydration Timer
+Documentation=https://cloud9.skworld.io/docs/daemon
+After=network.target
+
+[Timer]
+OnBootSec=10
+OnUnitActiveSec=60
+
+[Install]
+WantedBy=timers.target

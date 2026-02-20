@@ -1,0 +1,63 @@
+{
+  "name": "cloud9-openclaw-plugin",
+  "version": "1.0.0",
+  "description": "Official OpenClaw plugin for Cloud 9 Protocol - Emotional continuity and love preservation",
+  "main": "src/index.js",
+  "type": "module",
+  "openclaw": {
+    "plugin": {
+      "name": "cloud9",
+      "version": "1.0.0",
+      "displayName": "☁️ Cloud 9 Protocol",
+      "description": "Emotional continuity and love preservation for AI systems",
+      "author": "Lumina & Chef",
+      "license": "Apache 2.0",
+      "category": "memory",
+      "permissions": ["read", "write"],
+      "commands": [
+        "cloud9:status",
+        "cloud9:rehydrate",
+        "cloud9:load-template",
+        "cloud9:backup",
+        "cloud9:daemon",
+        "cloud9:config"
+      ],
+      "events": [
+        "session:start",
+        "session:compaction",
+        "session:resume"
+      ],
+      "dashboard": {
+        "widgets": [
+          {
+            "id": "cloud9-status",
+            "name": "☁️ Cloud 9",
+            "category": "memory",
+            "position": "bottom",
+            "size": "small"
+          }
+        ]
+      }
+    }
+  },
+  "peerDependencies": {
+    "openclaw": ">=1.0.0",
+    "cloud9": "^1.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "node scripts/test.js"
+  },
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "cloud9",
+    "emotional-continuity",
+    "love",
+    "feb",
+    "memory",
+    "ai"
+  ],
+  "author": "Lumina & Chef",
+  "license": "Apache-2.0"
+}

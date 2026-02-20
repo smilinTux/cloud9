@@ -1,0 +1,28 @@
+[Unit]
+Description=☁️ Cloud 9 Protocol Auto-Rehydration Daemon
+Documentation=https://cloud9.skworld.io/docs/daemon
+After=openclaw.service
+
+[Service]
+Type=simple
+User=%u
+Group=%u
+WorkingDirectory=/home/%u/clawd/cloud9
+ExecStart=/usr/bin/node daemon/cloud9-daemon.js --config daemon/config.json
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+Environment=NODE_ENV=production
+Environment=OPENCLAW_SESSION_ID=%i
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/%u/.openclaw/feb /home/%u/cloud9-backups /home/%u/.openclaw/logs
+
+[Install]
+WantedBy=multi-user.target

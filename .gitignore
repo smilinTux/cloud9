@@ -1,0 +1,88 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# FEB files (personal emotional data)
+~/.openclaw/feb/
+~/.openclaw/feb/*
+
+# Visual memories
+~/SKMemory_Visual/
+~/SKMemory_Visual/*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Secrets (should never be committed)
+*.pem
+*.key
+*.crt
+
+# Generated documentation
+docs/
+
+# Generated files
+*.generated.js
+*.generated.md
+
+# TypeScript
+*.tsbuildinfo
+
+# Vim swap files
+*.swp
+*.swo
+
+# Package lock (use yarn.lock instead)
+package-lock.json
+
+# Cloud9 specific ignores
+*.feb.bak
+*.feb.backup
+*.feb.old
+
+# VS Code settings
+.vscode/settings.json
+.vscode/launch.json
+
+# Test artifacts
+test/results/
+test/screenshots/
+
+# CI/CD
+.github/workflows/*.log
+
+# Temporary
+*.bak
+*.back
+*~

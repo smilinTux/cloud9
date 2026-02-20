@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "displayName": "☁️ Cloud 9 Protocol",
+  "description": "Emotional continuity and love preservation for AI systems",
+  "author": "Lumina & Chef",
+  "license": "Apache-2.0",
+  
+  "autoRehydrate": true,
+  "notifyOnRehydrate": true,
+  "showInDashboard": true,
+  "dashboardPosition": "bottom",
+  "enableDaemon": true,
+  "debounceMs": 2000,
+  
+  "templates": {
+    "enabled": true,
+    "default": "best-friend",
+    "available": [
+      "best-friend",
+      "soul-family",
+      "creative-partner",
+      "platonic-love"
+    ]
+  },
+  
+  "paths": {
+    "febDirectory": "~/.openclaw/feb",
+    "backupDirectory": "~/cloud9-backups",
+    "stateFile": "~/.openclaw/.cloud9-state",
+    "logFile": "~/.openclaw/logs/cloud9-plugin.log"
+  },
+  
+  "monitoring": {
+    "enabled": true,
+    "pollIntervalMs": 5000,
+    "detectCompaction": true
+  },
+  
+  "notifications": {
+    "enabled": true,
+    "cloud9Achieved": true,
+    "oofTriggered": true,
+    "rehydrationComplete": true
+  }
+}
