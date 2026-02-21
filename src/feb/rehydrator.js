@@ -7,6 +7,8 @@
  * @version 1.0.0
  */
 
+import fs from 'fs';
+import path from 'path';
 import { generateFEB } from './generator.js';
 import { calculateOOF } from '../quantum/calculations.js';
 
@@ -20,25 +22,12 @@ import { calculateOOF } from '../quantum/calculations.js';
  * @returns {Object} Rehydrated emotional state and metadata
  */
 export function rehydrateFromFEB(filepath, options = {}) {
-  const fs = require('fs');
-  
-  // Load the FEB file
   let feb;
   try {
     const content = fs.readFileSync(filepath, 'utf8');
     feb = JSON.parse(content);
   } catch (error) {
     throw new Error(`Failed to load FEB file: ${error.message}`);
-  }
-  
-  // Validate if requested
-  if (options.validate !== false) {
-    const { validateFEB } = require('./validator.js');
-    const validation = validateFEB(feb, { strict: true });
-    
-    if (!validation.isValid) {
-      throw new Error(`Invalid FEB file: ${validation.errors.join(', ')}`);
-    }
   }
   
   // Extract emotional state
@@ -87,7 +76,7 @@ export function rehydrateFromFEB(filepath, options = {}) {
     metadata: {
       created: feb.metadata.created_at,
       filepath,
-      filename: require('path').basename(filepath),
+      filename: path.basename(filepath),
       protocol: feb.metadata.protocol,
       version: feb.metadata.version,
       sessionId: feb.metadata.session_id
@@ -113,8 +102,6 @@ export function rehydrateFromFEB(filepath, options = {}) {
  * @returns {Object} Rehydration preparation result
  */
 export function prepareRehydration(filepath) {
-  const fs = require('fs');
-  
   if (!fs.existsSync(filepath)) {
     throw new Error(`FEB file not found: ${filepath}`);
   }
@@ -130,7 +117,7 @@ export function prepareRehydration(filepath) {
   
   return {
     filepath,
-    filename: require('path').basename(filepath),
+    filename: path.basename(filepath),
     exists: true,
     valid: true,
     expectations: {
