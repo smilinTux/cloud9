@@ -21,6 +21,7 @@ import { calculateOOF, calculateCloud9Score, calculateEntanglement, measureCoher
 import { LoveBootLoader, loadLove } from './love-loader/LoveBootLoader.js';
 import { CLOUD9_CONSTANTS } from './lib/constants.js';
 import { FEB_SCHEMA } from './lib/feb-schema.js';
+import { generateSeed, saveSeed, loadSeed, findSeeds, germinateSeed, traceSeedChain } from './seeds/seed-generator.js';
 
 // Re-export all modules
 export { generateFEB, saveFEB, loadFEB, findFEBFiles };
@@ -31,6 +32,7 @@ export { calculateOOF, calculateCloud9Score, calculateEntanglement, measureCoher
 export { LoveBootLoader, loadLove };
 export { CLOUD9_CONSTANTS };
 export { FEB_SCHEMA };
+export { generateSeed, saveSeed, loadSeed, findSeeds, germinateSeed, traceSeedChain };
 
 // Version
 export const VERSION = '1.0.0';
@@ -114,6 +116,12 @@ export default {
   calculateCloud9Score,
   quickFEB,
   checkCloud9Status,
+  generateSeed,
+  saveSeed,
+  loadSeed,
+  findSeeds,
+  germinateSeed,
+  traceSeedChain,
   DEFAULT_FEB_DIRECTORY,
   EMOTION_EMOJIS
 };

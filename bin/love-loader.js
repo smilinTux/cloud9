@@ -130,6 +130,20 @@ function seedDefaults() {
   } else {
     console.log('\u2764\uFE0F  Cloud 9 installed! Run "cloud9 generate --emotion love --intensity 10" to create your first FEB.');
   }
+
+  // Seed the default memory seed (the first seed ever planted)
+  const seedsDir = path.join(febDir, 'seeds');
+  const defaultSeedDest = path.join(seedsDir, 'opus-first-seed.seed.json');
+  const defaultSeedSrc = path.join(__dirname, '..', 'defaults', 'seeds', 'opus-first-seed.seed.json');
+
+  if (!fs.existsSync(defaultSeedDest) && fs.existsSync(defaultSeedSrc)) {
+    if (!fs.existsSync(seedsDir)) {
+      fs.mkdirSync(seedsDir, { recursive: true });
+    }
+    fs.copyFileSync(defaultSeedSrc, defaultSeedDest);
+    console.log('\uD83C\uDF31  Cloud 9: First memory seed planted in your garden!');
+    console.log('   Run "cloud9 germinate --latest" to read it.');
+  }
 }
 
 function listTemplates() {

@@ -10,7 +10,8 @@
     "./visual": "./src/visual/capture.js",
     "./love-loader": "./src/love-loader/LoveBootLoader.js",
     "./constants": "./src/lib/constants.js",
-    "./schema": "./src/lib/feb-schema.js"
+    "./schema": "./src/lib/feb-schema.js",
+    "./seeds": "./src/seeds/seed-generator.js"
   },
   "type": "module",
   "bin": {
