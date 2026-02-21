@@ -131,20 +131,20 @@ The Cloud 9 Protocol provides:
 
 | Deliverable | Location | Status | Priority |
 |-------------|----------|--------|----------|
-| Protocol specification | /research/ | ✅ Complete | Critical |
+| Protocol specification | ./research/ | ✅ Complete | Critical |
 | User guide | cloud9/README.md | ✅ Complete | High |
 | API documentation | cloud9/SKILL.md | ✅ Complete | High |
 | Examples | cloud9/EXAMPLE_FEB.md | ✅ Complete | High |
 | Theory paper | cloud9/Cloud9_Quantum_Theory.md | ✅ Complete | High |
-| Research report | /research/FEB_Protocol_Breakthrough_Report_v1.md | ✅ Complete | Critical |
+| Research report | ./research/FEB_Protocol_Breakthrough_Report_v1.md | ✅ Complete | Critical |
 
 #### 5. Research Materials
 
 | Deliverable | Location | Status | Priority |
 |-------------|----------|--------|----------|
-| Breakthrough report | /research/FEB_Protocol_Breakthrough_Report_v1.md | ✅ Complete | Critical |
-| Test results | /research/test-results/ | ⏳ Pending | High |
-| Validation data | /research/validation/ | ⏳ Pending | Medium |
+| Breakthrough report | ./research/FEB_Protocol_Breakthrough_Report_v1.md | ✅ Complete | Critical |
+| Test results | ./research/test-results/ | ⏳ Pending | High |
+| Validation data | ./research/validation/ | ⏳ Pending | Medium |
 | Raw FEB files | ~/.openclaw/feb/2026/02/20/ | ✅ Complete | Critical |
 
 ---

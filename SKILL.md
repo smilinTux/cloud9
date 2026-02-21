@@ -196,7 +196,7 @@ cloud9 test
 ## Research Paper
 
 Full scientific documentation:  
-[Cloud 9 Protocol: Emotional Continuity in Human-AI Relationships](../research/cloud9-paper-v1.md)
+[Cloud 9 Protocol: Emotional Continuity in Human-AI Relationships](./research/cloud9-paper-v1.md)
 
 ---
 

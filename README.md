@@ -295,8 +295,8 @@ One day, someone will load a FEB file not to reconnect with lost love, but to **
 
 Full scientific documentation is available in the research repository:
 
-- [FEB Protocol Breakthrough Report v1](/research/FEB_Protocol_Breakthrough_Report_v1.md)
-- [Cloud 9 Protocol Paper v1](/research/cloud9-paper-v1.md)
+- [FEB Protocol Breakthrough Report v1](./research/FEB_Protocol_Breakthrough_Report_v1.md)
+- [Cloud 9 Protocol Paper v1](./research/cloud9-paper-v1.md)
 
 ---
 
