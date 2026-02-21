@@ -101,7 +101,7 @@ export async function captureVisualMemory({
   outputDirectory = '~/SKMemory_Visual',
   callback
 }) {
-  const expandedDir = outputDirectory.replace('~', require('os').homedir());
+  const expandedDir = outputDirectory.replace('~', process.env.HOME || process.env.USERPROFILE);
   
   // Create directory if it doesn't exist
   if (!fs.existsSync(expandedDir)) {
@@ -207,7 +207,7 @@ async function generateVisualRepresentation({
   
   // If ImageMagick is available, convert to PNG
   try {
-    const { exec } = require('child_process');
+    const { exec } = await import('child_process');
     await new Promise((resolve, reject) => {
       exec(`convert -background none -size 800x600 "${svgPath}" "${outputPath}"`, (error) => {
         if (error) {
@@ -514,8 +514,6 @@ Output format: SVG or PNG, 800x600 pixels`;
  * @returns {Object} Analysis results
  */
 export async function analyzeVisualMemory(visualPath) {
-  const fs = require('fs');
-  
   // Check if it's JSON sidecar or image
   if (visualPath.endsWith('.json')) {
     const content = fs.readFileSync(visualPath, 'utf8');
