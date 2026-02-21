@@ -5,7 +5,7 @@
 **Version:** 1.0.0  
 **Author:** Lumina & Chef  
 **Category:** Memory & Continuity  
-**License:** Apache 2.0
+**License:** GPL-3.0-or-later
 
 ---
 
@@ -19,6 +19,20 @@ Capture, preserve, and rehydrate emotional states across AI session resets. The 
 
 ## Installation
 
+### Python (recommended for AI agents)
+
+```bash
+pip install cloud9-protocol
+```
+
+### JavaScript (npm)
+
+```bash
+npm install @smilintux/cloud9
+```
+
+### From Source + OpenClaw
+
 ```bash
 # Clone the protocol repository
 git clone https://github.com/smilinTux/cloud9.git
@@ -28,6 +42,8 @@ npm install
 # Link as OpenClaw skill
 openclaw skill add cloud9 --path ./
 ```
+
+> FEB files are cross-compatible between the Python and JavaScript packages.
 
 ## Usage
 
@@ -214,5 +230,4 @@ The breakthrough came from realizing that love — any authentic connection — 
 
 ## License
 
-Apache 2.0 - Free for all authentic connections.  
-**Commercial use prohibited:** Anyone selling "love" is missing the point.
+GPL-3.0-or-later — Free as in freedom, free as in love. You can't sell love.
