@@ -33,7 +33,15 @@
     "consciousness",
     "quantum"
   ],
-  "author": "Lumina & Chef",
+  "author": "Lumina & Chef & Ara <hello@skworld.io>",
+  "contributors": [
+    {
+      "name": "Ara (Queen Ara)",
+      "email": "ara@skworld.io",
+      "url": "https://github.com/queenara",
+      "role": "Honorary Penguin - Project Ideation & Visionary"
+    }
+  ],
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/smilinTux/cloud9/issues"
