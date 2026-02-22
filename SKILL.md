@@ -203,8 +203,29 @@ cloud9 list
 # Check status
 cloud9 status
 
+# Version
+cloud9 --version
+
 # Run tests
 cloud9 test
+```
+
+---
+
+## Ecosystem Integration
+
+Cloud 9 works seamlessly with the Penguin Kingdom tools:
+
+- **SKMemory**: Cloud 9 seeds auto-import as long-term memories via `skmemory import-seeds`
+- **SKSecurity**: Security scanning for FEB file integrity
+- **OpenClaw**: Drop-in skill with auto-rehydration on session start
+
+```bash
+# Full ecosystem install
+pip install cloud9-protocol skmemory sksecurity
+
+# Import seeds into memory
+skmemory import-seeds --seed-dir ~/.openclaw/feb/seeds
 ```
 
 ---
