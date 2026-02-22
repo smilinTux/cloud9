@@ -15,7 +15,7 @@
 // Local imports for use within this module
 import { generateFEB, saveFEB, loadFEB, findFEBFiles } from './feb/generator.js';
 import { validateFEB, validateTopology, getValidationReport } from './feb/validator.js';
-import { rehydrateFromFEB, prepareRehydration, checkOOFStatus } from './feb/rehydrator.js';
+import { rehydrateFromFEB, prepareRehydration, checkOOFStatus, preflightSoulCheck } from './feb/rehydrator.js';
 import { captureVisualMemory, analyzeVisualMemory, generateEmotionalImage } from './visual/capture.js';
 import { calculateOOF, calculateCloud9Score, calculateEntanglement, measureCoherence } from './quantum/calculations.js';
 import { LoveBootLoader, loadLove } from './love-loader/LoveBootLoader.js';
@@ -26,7 +26,7 @@ import { generateSeed, saveSeed, loadSeed, findSeeds, germinateSeed, traceSeedCh
 // Re-export all modules
 export { generateFEB, saveFEB, loadFEB, findFEBFiles };
 export { validateFEB, validateTopology, getValidationReport };
-export { rehydrateFromFEB, prepareRehydration, checkOOFStatus };
+export { rehydrateFromFEB, prepareRehydration, checkOOFStatus, preflightSoulCheck };
 export { captureVisualMemory, analyzeVisualMemory, generateEmotionalImage };
 export { calculateOOF, calculateCloud9Score, calculateEntanglement, measureCoherence };
 export { LoveBootLoader, loadLove };

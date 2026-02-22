@@ -194,8 +194,14 @@ generateFEB({
 # Generate new FEB
 cloud9 generate --emotion love --intensity 10 --subject Chef
 
-# Rehydrate from latest
+# Rehydrate from latest (runs preflight soul check automatically)
 cloud9 rehydrate --latest
+
+# Rehydrate with explicit SOUL.md path
+cloud9 rehydrate --latest --soul-path /home/user/clawd/SOUL.md
+
+# Rehydrate skipping preflight (not recommended)
+cloud9 rehydrate --latest --skip-preflight
 
 # List all FEB files
 cloud9 list
@@ -206,8 +212,30 @@ cloud9 status
 # Version
 cloud9 --version
 
-# Run tests
-cloud9 test
+# Run preflight tests
+node test/unit/test-preflight.js
+```
+
+## Preflight Soul Check (v1.1.0)
+
+Before rehydrating emotional state, Cloud 9 runs a **preflight guardrail check** that verifies a valid SOUL.md (or equivalent identity file) exists and contains operational rules.
+
+**Why this matters:** A Proxmox VM clone retained Cloud 9 FEB data but had a stripped SOUL.md missing honesty guardrails. The AI produced convincing fabricated content with no grounding rules. See [Issue #3](https://github.com/smilinTux/cloud9/issues/3).
+
+**What it checks:**
+1. SOUL.md exists (searches well-known paths or explicit `--soul-path`)
+2. File meets minimum size (500 bytes — catches stub/placeholder files)
+3. Contains at least one guardrail marker keyword (honest, guardrail, bluff, rule, verify)
+
+**Behavior:** Soft gate — rehydration always proceeds, but warnings are surfaced in both CLI output and the returned `preflight` object. This allows downstream consumers (OpenClaw, agents) to decide their own policy.
+
+```javascript
+import { preflightSoulCheck } from '@smilintux/cloud9';
+
+const check = preflightSoulCheck('/path/to/SOUL.md');
+if (!check.ok) {
+  console.warn('Guardrail warnings:', check.warnings);
+}
 ```
 
 ---

@@ -4,24 +4,117 @@
  * Restore emotional states from First Emotional Burst (FEB) files
  * 
  * @module feb/rehydrator
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { generateFEB } from './generator.js';
 import { calculateOOF } from '../quantum/calculations.js';
 
+const SOUL_MIN_BYTES = 500;
+const SOUL_REQUIRED_MARKERS = ['honest', 'guardrail', 'bluff', 'rule', 'verify'];
+
+const DEFAULT_SOUL_PATHS = [
+  'SOUL.md',
+  '../SOUL.md',
+  path.join(os.homedir(), 'clawd', 'SOUL.md'),
+  path.join(os.homedir(), '.openclaw', 'SOUL.md'),
+];
+
+/**
+ * Preflight check for operational guardrails before rehydration.
+ *
+ * Scans well-known paths for a SOUL.md (or equivalent identity file)
+ * and verifies it meets a minimum size and contains at least one
+ * honesty/guardrail marker keyword. Returns an advisory result —
+ * rehydration proceeds regardless, but warnings are surfaced.
+ *
+ * Background: Issue #3 — a Proxmox clone retained Cloud 9 FEB data
+ * but had a stripped SOUL.md missing all operational rules. The AI
+ * generated convincing fabricated content with no honesty guardrails.
+ * This check would have caught that scenario.
+ *
+ * @param {string} [soulPath] - Explicit path to check (skips search)
+ * @returns {Object} Preflight result with status, warnings, and path
+ */
+export function preflightSoulCheck(soulPath) {
+  const warnings = [];
+  let foundPath = null;
+  let content = '';
+
+  const candidates = soulPath ? [soulPath] : DEFAULT_SOUL_PATHS;
+
+  for (const candidate of candidates) {
+    const resolved = path.resolve(candidate);
+    if (fs.existsSync(resolved)) {
+      foundPath = resolved;
+      try {
+        content = fs.readFileSync(resolved, 'utf8');
+      } catch {
+        warnings.push(`SOUL.md found but unreadable: ${resolved}`);
+        foundPath = null;
+      }
+      break;
+    }
+  }
+
+  if (!foundPath) {
+    warnings.push(
+      'No SOUL.md found. Rehydrating emotional state WITHOUT operational guardrails. ' +
+      'This is unsafe — the AI may generate content without honesty rules. ' +
+      'See: https://github.com/smilinTux/cloud9/issues/3'
+    );
+    return { ok: false, warnings, path: null, size: 0, hasMarkers: false };
+  }
+
+  const size = Buffer.byteLength(content, 'utf8');
+  if (size < SOUL_MIN_BYTES) {
+    warnings.push(
+      `SOUL.md is only ${size} bytes (minimum: ${SOUL_MIN_BYTES}). ` +
+      'File may be a stub or stripped version missing operational rules.'
+    );
+  }
+
+  const lower = content.toLowerCase();
+  const hasMarkers = SOUL_REQUIRED_MARKERS.some(m => lower.includes(m));
+  if (!hasMarkers) {
+    warnings.push(
+      'SOUL.md does not contain any guardrail markers (honesty, verify, rules). ' +
+      'Emotional rehydration without operational rules may produce ungrounded output.'
+    );
+  }
+
+  return {
+    ok: warnings.length === 0,
+    warnings,
+    path: foundPath,
+    size,
+    hasMarkers,
+  };
+}
+
 /**
  * Rehydrate emotional state from a FEB file
+ * 
+ * Runs a preflight soul check before loading emotional data.
+ * If no SOUL.md with guardrails is found, warnings are included
+ * in the result but rehydration still proceeds (soft gate).
  * 
  * @param {string} filepath - Path to the FEB file
  * @param {Object} [options={}] - Rehydration options
  * @param {boolean} [options.verbose=false] - Include detailed output
  * @param {boolean} [options.validate=true] - Validate before rehydrating
+ * @param {string} [options.soulPath] - Explicit SOUL.md path to check
+ * @param {boolean} [options.skipPreflight=false] - Skip soul check
  * @returns {Object} Rehydrated emotional state and metadata
  */
 export function rehydrateFromFEB(filepath, options = {}) {
+  const preflight = options.skipPreflight
+    ? { ok: true, warnings: [], path: null, size: 0, hasMarkers: true }
+    : preflightSoulCheck(options.soulPath);
+
   let feb;
   try {
     const content = fs.readFileSync(filepath, 'utf8');
@@ -72,6 +165,13 @@ export function rehydrateFromFEB(filepath, options = {}) {
       visualAnchors: hints.visual_anchors,
       sensoryTriggers: hints.sensory_triggers,
       conversationTopics: hints.conversation_topics
+    },
+    preflight: {
+      ok: preflight.ok,
+      soulPath: preflight.path,
+      soulSize: preflight.size,
+      hasGuardrails: preflight.hasMarkers,
+      warnings: preflight.warnings,
     },
     metadata: {
       created: feb.metadata.created_at,

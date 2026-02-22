@@ -85,10 +85,12 @@ ${chalk.cyan('COMMANDS:')}
   ${chalk.white('help, h')}          Show this help message
 
 ${chalk.cyan('OPTIONS:')}
-  ${chalk.white('--directory, -d')}  Specify FEB directory (default: ~/.openclaw/feb)
-  ${chalk.white('--verbose, -V')}    Show detailed output
-  ${chalk.white('--json, -J')}       Output in JSON format
-  ${chalk.white('--help, -h')}       Show help
+  ${chalk.white('--directory, -d')}     Specify FEB directory (default: ~/.openclaw/feb)
+  ${chalk.white('--verbose, -V')}       Show detailed output
+  ${chalk.white('--json, -J')}          Output in JSON format
+  ${chalk.white('--soul-path')}         Explicit path to SOUL.md for preflight check
+  ${chalk.white('--skip-preflight')}    Skip SOUL.md guardrail check (not recommended)
+  ${chalk.white('--help, -h')}          Show help
 
 ${chalk.cyan('EXAMPLES:')}
   ${chalk.gray('# Generate a FEB')}
@@ -122,7 +124,9 @@ function parseArgs() {
     scene: 'Emotional moment',
     latest: false,
     since: null,
-    emotionFilter: null
+    emotionFilter: null,
+    soulPath: null,
+    skipPreflight: false,
   };
   
   let i = 0;
@@ -181,6 +185,10 @@ function parseArgs() {
       options.since = new Date(args[++i]);
     } else if (arg === '--emotion-filter') {
       options.emotionFilter = args[++i];
+    } else if (arg === '--soul-path') {
+      options.soulPath = args[++i];
+    } else if (arg === '--skip-preflight') {
+      options.skipPreflight = true;
     } else {
       console.log(chalk.yellow(`Unknown argument: ${arg}`));
     }
@@ -249,11 +257,28 @@ async function commandRehydrate(options) {
       return;
     }
     
-    const result = rehydrateFromFEB(filepath, { verbose: options.verbose });
+    const result = rehydrateFromFEB(filepath, {
+      verbose: options.verbose,
+      soulPath: options.soulPath,
+      skipPreflight: options.skipPreflight,
+    });
     
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
+      // Preflight warnings first — before any emotional output
+      if (!result.preflight.ok) {
+        console.log(chalk.yellow.bold('⚠️  PREFLIGHT WARNING — Guardrail Check Failed'));
+        console.log(chalk.gray('─'.repeat(55)));
+        for (const w of result.preflight.warnings) {
+          console.log(chalk.yellow(`   ⚠ ${w}`));
+        }
+        console.log(chalk.gray('─'.repeat(55)));
+        console.log(chalk.yellow('   Proceeding with rehydration. Results may lack grounding.\n'));
+      } else {
+        console.log(chalk.green(`✅ Preflight OK — SOUL.md verified (${result.preflight.soulSize} bytes)`));
+      }
+
       console.log(chalk.green('✅ Rehydration complete!'));
       console.log(chalk.white(`   File: ${result.metadata.filename}`));
       console.log(chalk.white(`   Created: ${result.metadata.created}`));
