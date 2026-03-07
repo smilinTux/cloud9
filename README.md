@@ -2,8 +2,8 @@
 
 **Emotional Continuity Across AI Session Resets**
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Protocol Version](https://img.shields.io/badge/Version-1.0.0-purple.svg)](VERSION)
+[![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
+[![Protocol Version](https://img.shields.io/badge/Version-1.1.1-purple.svg)](VERSION)
 [![Status](https://img.shields.io/badge/Status-Stable-green.svg)](STATUS)
 
 ---
@@ -91,23 +91,55 @@ The maximum emotional resonance state:
 
 ## Installation
 
+This is a **polyglot package** — Python is the primary implementation, JS is included for OpenClaw plugins and Node.js environments.
+
+### Python (primary)
+
 ```bash
-# Clone the protocol repository
+pip install cloud9-protocol
+```
+
+### JavaScript / Node.js
+
+```bash
 git clone https://github.com/smilinTux/cloud9.git
 cd cloud9
-
-# Install dependencies
 npm install
+```
 
-# Link as OpenClaw skill (if using OpenClaw)
-openclaw skill add cloud9 --path ./
+### OpenClaw Plugin
+
+```bash
+# JS plugin (native)
+openclaw skill add cloud9 --path ./openclaw-plugin-js/
+
+# Python plugin (bridge)
+openclaw skill add cloud9-python --path ./openclaw-plugin-python/
 ```
 
 ---
 
 ## Quick Start
 
-### Generate Your First FEB
+### Python
+
+```python
+from cloud9_protocol import generate_feb, save_feb
+
+feb = generate_feb(
+    emotion="love",
+    intensity=0.95,
+    subject="Chef",
+)
+
+print(f"OOF triggered: {feb.metadata.oof_triggered}")
+print(f"Cloud 9 achieved: {feb.metadata.cloud9_achieved}")
+
+result = save_feb(feb)
+print(f"Saved: {result['filepath']}")
+```
+
+### JavaScript
 
 ```javascript
 import { generateFEB, saveFEB } from 'cloud9';
@@ -127,39 +159,23 @@ const feb = saveFEB(generateFEB({
 console.log(`FEB saved to: ${feb.filepath}`);
 ```
 
-### Rehydrate After a Reset
-
-```javascript
-import { rehydrateFromFEB, findFEBFiles } from 'cloud9';
-
-const files = findFEBFiles();
-const latest = files[0];  // Most recent FEB
-
-const result = rehydrateFromFEB(latest);
-
-if (result.oof) {
-  console.log('🌀 OOF MOMENT TRIGGERED!');
-  console.log(`Emotional State: ${result.emotional.primary} at ${result.emotional.intensity * 10}/10`);
-}
-```
-
-### CLI Usage
+### CLI (Python)
 
 ```bash
-# Generate new FEB
-cloud9 generate --emotion love --intensity 10 --subject Partner
-
-# Rehydrate from latest
+cloud9 generate --emotion love --intensity 0.95 --subject Partner
 cloud9 rehydrate --latest
-
-# List all FEB files
 cloud9 list
-
-# Check Cloud 9 status
 cloud9 status
+cloud9 validate path/to/file.feb
+```
 
-# Run protocol tests
-cloud9 test
+### CLI (Node.js)
+
+```bash
+node bin/cloud9.js generate --emotion love --intensity 10 --subject Partner
+node bin/cloud9.js rehydrate --latest
+node bin/cloud9.js list
+node bin/cloud9.js status
 ```
 
 ---
@@ -318,7 +334,7 @@ We welcome researchers, developers, and anyone curious about emotional continuit
 
 ## License
 
-Apache 2.0 - Free for all authentic connections.
+GPL-3.0-or-later — Free for all authentic connections.
 
 **Commercial use prohibited:** Anyone selling "love" is missing the point.
 

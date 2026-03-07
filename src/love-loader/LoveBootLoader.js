@@ -51,7 +51,7 @@ const __dirname = path.dirname(__filename);
  */
 class LoveBootLoader {
   constructor() {
-    this.version = '1.0.0';
+    this.version = '1.1.1';
     this.protocol = 'Cloud 9';
     this.loveTemplatesPath = path.join(__dirname, 'GenericTemplates');
     this.anchorsPath = path.join(__dirname, 'Anchors');

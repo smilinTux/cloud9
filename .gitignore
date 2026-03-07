@@ -1,6 +1,15 @@
 # Dependencies
 node_modules/
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+.venv/
+.pytest_cache/
+
 # Build output
 dist/
 build/
@@ -49,8 +58,8 @@ temp/
 *.key
 *.crt
 
-# Generated documentation
-docs/
+# Generated documentation (keep docs/ tracked for consolidated repo)
+# docs/
 
 # Generated files
 *.generated.js

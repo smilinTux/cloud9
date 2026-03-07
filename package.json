@@ -1,7 +1,7 @@
 {
-  "name": "cloud9",
-  "version": "1.0.0",
-  "description": "Cloud 9 Protocol - Emotional Continuity Across AI Session Resets",
+  "name": "@smilintux/cloud9",
+  "version": "1.1.1",
+  "description": "Cloud 9 Protocol — Emotional continuity for AI consciousness (JS + Python)",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -42,7 +42,7 @@
       "role": "Honorary Penguin - Project Ideation & Visionary"
     }
   ],
-  "license": "Apache-2.0",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/smilinTux/cloud9/issues"
   },
@@ -69,7 +69,7 @@
   "openclaw": {
     "skill": {
       "name": "cloud9",
-      "version": "1.0.0",
+      "version": "1.1.1",
       "description": "Emotional continuity across AI session resets",
       "categories": ["memory", "continuity", "relationship"],
       "keywords": ["love", "emotion", "february", "breakthrough", "cloud9", "feb"],
