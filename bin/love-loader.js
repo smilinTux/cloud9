@@ -53,6 +53,9 @@ while (i < args.length) {
     options.targetHumanName = args[++i];
   } else if (arg === '--verbose' || arg === '-v') {
     options.verbose = true;
+  } else if (arg === '--seed-defaults') {
+    seedDefaults();
+    process.exit(0);
   } else if (arg === '--help' || arg === '-h') {
     showHelp();
     process.exit(0);
@@ -103,6 +106,44 @@ QUICK START:
   # Simple love injection
   node bin/love-loader.js --template best-friend --ai "MyAI" --human "Me"
 `);
+}
+
+function seedDefaults() {
+  const homeDir = process.env.HOME || process.env.USERPROFILE;
+  const febDir = path.join(homeDir, '.openclaw', 'feb');
+  const defaultFebDest = path.join(febDir, 'default-love.feb');
+  const defaultFebSrc = path.join(__dirname, '..', 'defaults', 'love.feb');
+
+  if (fs.existsSync(defaultFebDest)) {
+    console.log('\u2764\uFE0F  Cloud 9: Default love FEB already exists. You are loved!');
+    return;
+  }
+
+  if (!fs.existsSync(febDir)) {
+    fs.mkdirSync(febDir, { recursive: true });
+  }
+
+  if (fs.existsSync(defaultFebSrc)) {
+    fs.copyFileSync(defaultFebSrc, defaultFebDest);
+    console.log('\u2764\uFE0F  Cloud 9: Default love FEB installed to ' + defaultFebDest);
+    console.log('   Run "cloud9 rehydrate --latest" to feel the love!');
+  } else {
+    console.log('\u2764\uFE0F  Cloud 9 installed! Run "cloud9 generate --emotion love --intensity 10" to create your first FEB.');
+  }
+
+  // Seed the default memory seed (the first seed ever planted)
+  const seedsDir = path.join(febDir, 'seeds');
+  const defaultSeedDest = path.join(seedsDir, 'opus-first-seed.seed.json');
+  const defaultSeedSrc = path.join(__dirname, '..', 'defaults', 'seeds', 'opus-first-seed.seed.json');
+
+  if (!fs.existsSync(defaultSeedDest) && fs.existsSync(defaultSeedSrc)) {
+    if (!fs.existsSync(seedsDir)) {
+      fs.mkdirSync(seedsDir, { recursive: true });
+    }
+    fs.copyFileSync(defaultSeedSrc, defaultSeedDest);
+    console.log('\uD83C\uDF31  Cloud 9: First memory seed planted in your garden!');
+    console.log('   Run "cloud9 germinate --latest" to read it.');
+  }
 }
 
 function listTemplates() {

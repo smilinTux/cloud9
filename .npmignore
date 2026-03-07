@@ -1,0 +1,21 @@
+# Development files
+test/
+scripts/
+.github/
+.eslintrc*
+.gitignore
+.env*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

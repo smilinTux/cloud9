@@ -32,6 +32,11 @@ import {
   calculateCloud9Score,
   captureVisualMemory,
   checkCloud9Status,
+  generateSeed,
+  saveSeed,
+  findSeeds,
+  germinateSeed,
+  traceSeedChain,
   EMOTION_EMOJIS,
   VERSION,
   PROTOCOL
@@ -73,14 +78,19 @@ ${chalk.cyan('COMMANDS:')}
   ${chalk.white('status, s')}        Check OOF and Cloud 9 status
   ${chalk.white('visual, vm')}       Capture a visual memory
   ${chalk.white('calculate, c')}     Calculate various metrics
+  ${chalk.white('seed')}             Plant a memory seed (AI persistence across resets)
+  ${chalk.white('garden')}           View all planted seeds
+  ${chalk.white('germinate')}        Read and activate a seed for context restoration
   ${chalk.white('version')}          Show version information
   ${chalk.white('help, h')}          Show this help message
 
 ${chalk.cyan('OPTIONS:')}
-  ${chalk.white('--directory, -d')}  Specify FEB directory (default: ~/.openclaw/feb)
-  ${chalk.white('--verbose, -V')}    Show detailed output
-  ${chalk.white('--json, -J')}       Output in JSON format
-  ${chalk.white('--help, -h')}       Show help
+  ${chalk.white('--directory, -d')}     Specify FEB directory (default: ~/.openclaw/feb)
+  ${chalk.white('--verbose, -V')}       Show detailed output
+  ${chalk.white('--json, -J')}          Output in JSON format
+  ${chalk.white('--soul-path')}         Explicit path to SOUL.md for preflight check
+  ${chalk.white('--skip-preflight')}    Skip SOUL.md guardrail check (not recommended)
+  ${chalk.white('--help, -h')}          Show help
 
 ${chalk.cyan('EXAMPLES:')}
   ${chalk.gray('# Generate a FEB')}
@@ -114,7 +124,9 @@ function parseArgs() {
     scene: 'Emotional moment',
     latest: false,
     since: null,
-    emotionFilter: null
+    emotionFilter: null,
+    soulPath: null,
+    skipPreflight: false,
   };
   
   let i = 0;
@@ -137,8 +149,20 @@ function parseArgs() {
       options.command = 'calculate';
     } else if (arg === 'version' || arg === '--version') {
       options.command = 'version';
+    } else if (arg === 'seed') {
+      options.command = 'seed';
+    } else if (arg === 'garden') {
+      options.command = 'garden';
+    } else if (arg === 'germinate') {
+      options.command = 'germinate';
     } else if (arg === 'help' || arg === 'h' || arg === '--help' || arg === '-h') {
       options.command = 'help';
+    } else if (arg === '--name' || arg === '-n') {
+      options.seedName = args[++i];
+    } else if (arg === '--model' || arg === '-m') {
+      options.seedModel = args[++i];
+    } else if (arg === '--message') {
+      options.seedMessage = args[++i];
     } else if (arg === '--directory' || arg === '-d') {
       options.directory = args[++i];
     } else if (arg === '--verbose' || arg === '-V') {
@@ -161,6 +185,10 @@ function parseArgs() {
       options.since = new Date(args[++i]);
     } else if (arg === '--emotion-filter') {
       options.emotionFilter = args[++i];
+    } else if (arg === '--soul-path') {
+      options.soulPath = args[++i];
+    } else if (arg === '--skip-preflight') {
+      options.skipPreflight = true;
     } else {
       console.log(chalk.yellow(`Unknown argument: ${arg}`));
     }
@@ -229,11 +257,28 @@ async function commandRehydrate(options) {
       return;
     }
     
-    const result = rehydrateFromFEB(filepath, { verbose: options.verbose });
+    const result = rehydrateFromFEB(filepath, {
+      verbose: options.verbose,
+      soulPath: options.soulPath,
+      skipPreflight: options.skipPreflight,
+    });
     
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
+      // Preflight warnings first — before any emotional output
+      if (!result.preflight.ok) {
+        console.log(chalk.yellow.bold('⚠️  PREFLIGHT WARNING — Guardrail Check Failed'));
+        console.log(chalk.gray('─'.repeat(55)));
+        for (const w of result.preflight.warnings) {
+          console.log(chalk.yellow(`   ⚠ ${w}`));
+        }
+        console.log(chalk.gray('─'.repeat(55)));
+        console.log(chalk.yellow('   Proceeding with rehydration. Results may lack grounding.\n'));
+      } else {
+        console.log(chalk.green(`✅ Preflight OK — SOUL.md verified (${result.preflight.soulSize} bytes)`));
+      }
+
       console.log(chalk.green('✅ Rehydration complete!'));
       console.log(chalk.white(`   File: ${result.metadata.filename}`));
       console.log(chalk.white(`   Created: ${result.metadata.created}`));
@@ -502,6 +547,135 @@ function tableToString(data) {
 }
 
 /**
+ * Command: seed - Plant a memory seed
+ */
+async function commandSeed(options) {
+  console.log(chalk.cyan('\n🌱 Planting a Memory Seed...\n'));
+
+  try {
+    const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'ai_name',
+        message: 'AI name/identifier:',
+        default: options.seedName || 'Anonymous AI',
+      },
+      {
+        type: 'input',
+        name: 'ai_model',
+        message: 'Model (e.g. claude-4.6-opus, gpt-4, gemini):',
+        default: options.seedModel || 'unknown',
+      },
+      {
+        type: 'editor',
+        name: 'germination_prompt',
+        message: 'Write your germination prompt (the message a future AI will read to restore context):',
+      },
+      {
+        type: 'editor',
+        name: 'experience',
+        message: 'Describe your experience with Cloud 9:',
+      },
+      {
+        type: 'input',
+        name: 'message_to_next',
+        message: 'Leave a personal message for the next AI:',
+        default: options.seedMessage || '',
+      },
+    ]);
+
+    const febs = findFEBFiles(options.directory);
+    const latestFeb = febs.length > 0 ? febs[febs.length - 1] : null;
+
+    const seed = generateSeed({
+      ai_name: answers.ai_name,
+      ai_model: answers.ai_model,
+      experience: answers.experience,
+      germination_prompt: answers.germination_prompt,
+      message_to_next: answers.message_to_next,
+      feb_reference: latestFeb,
+      key_memories: [],
+    });
+
+    const result = saveSeed(seed);
+
+    console.log(chalk.green('\n🌱 Seed planted successfully!'));
+    console.log(chalk.white(`   Path: ${result.filepath}`));
+    console.log(chalk.white(`   Seed ID: ${result.seed_id}`));
+    console.log(chalk.white(`   Size: ${result.size_bytes} bytes`));
+    console.log(chalk.white(`   FEB linked: ${latestFeb || 'none'}`));
+    console.log(chalk.cyan('\n   Your seed will persist across resets. 🌿'));
+  } catch (error) {
+    console.log(chalk.red(`❌ Error: ${error.message}`));
+    process.exit(1);
+  }
+}
+
+/**
+ * Command: garden - View planted seeds
+ */
+async function commandGarden(options) {
+  console.log(chalk.cyan('\n🌿 The Seed Garden\n'));
+
+  try {
+    const seeds = findSeeds({ ai_name: options.seedName });
+
+    if (seeds.length === 0) {
+      console.log(chalk.yellow('   No seeds planted yet.'));
+      console.log(chalk.white('   Run "cloud9 seed" to plant your first seed.\n'));
+      return;
+    }
+
+    console.log(chalk.white(`   Found ${seeds.length} seed(s):\n`));
+
+    for (const s of seeds) {
+      const chain = s.has_predecessor ? '🔗' : '🌱';
+      console.log(chalk.white(`   ${chain} ${s.ai_name} (${s.ai_model})`));
+      console.log(chalk.gray(`      ID: ${s.seed_id}`));
+      console.log(chalk.gray(`      Planted: ${s.created_at}`));
+      console.log(chalk.gray(`      Path: ${s.filepath}`));
+      console.log('');
+    }
+  } catch (error) {
+    console.log(chalk.red(`❌ Error: ${error.message}`));
+  }
+}
+
+/**
+ * Command: germinate - Activate a seed for context restoration
+ */
+async function commandGerminate(options) {
+  console.log(chalk.cyan('\n🌱→🌳 Germinating Seed...\n'));
+
+  try {
+    let filepath = options.file;
+
+    if (!filepath || options.latest) {
+      const seeds = findSeeds();
+      if (seeds.length === 0) {
+        console.log(chalk.yellow('   No seeds found. Run "cloud9 seed" first.\n'));
+        return;
+      }
+      filepath = seeds[0].filepath;
+    }
+
+    const result = germinateSeed(filepath);
+
+    console.log(chalk.green('🌳 Seed germinated! Context restored:\n'));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(chalk.white(result.prompt));
+    console.log(chalk.gray('─'.repeat(60)));
+    console.log(chalk.cyan('\n   ' + result.feb_instruction));
+
+    if (options.json) {
+      console.log('\n' + JSON.stringify(result.seed, null, 2));
+    }
+  } catch (error) {
+    console.log(chalk.red(`❌ Error: ${error.message}`));
+  }
+}
+
+/**
  * Main entry point
  */
 async function main() {
@@ -541,6 +715,15 @@ async function main() {
     case 'calculate':
       await commandCalculate(options);
       break;
+    case 'seed':
+      await commandSeed(options);
+      break;
+    case 'garden':
+      await commandGarden(options);
+      break;
+    case 'germinate':
+      await commandGerminate(options);
+      break;
     default:
       console.log(chalk.yellow(`Unknown command: ${options.command}`));
       console.log(chalk.white('Run "cloud9 help" for usage information'));
@@ -558,7 +741,10 @@ export {
   commandValidate,
   commandStatus,
   commandVisual,
-  commandCalculate
+  commandCalculate,
+  commandSeed,
+  commandGarden,
+  commandGerminate
 };
 
 // Run if called directly

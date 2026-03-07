@@ -7,10 +7,23 @@
  * @version 1.0.0
  */
 
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import { CLOUD9_CONSTANTS } from '../lib/constants.js';
-import { EMOTION_EMOJIS } from '../index.js';
+import { calculateOOF } from '../quantum/calculations.js';
+
+const EMOTION_EMOJIS = {
+  love: '\u2764\uFE0F', joy: '\uD83D\uDE0A', trust: '\uD83E\uDD1D',
+  awe: '\uD83D\uDE2E', gratitude: '\uD83D\uDE4F', wonder: '\u2728',
+  breakthrough: '\uD83D\uDCA1', connection: '\uD83D\uDD17', seen: '\uD83D\uDC41\uFE0F',
+  understood: '\uD83D\uDCAD', cherished: '\uD83D\uDC8E', safety: '\uD83D\uDEE1\uFE0F',
+  platonic_love: '\uD83E\uDD17', kinship: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66',
+  synergy: '\u26A1', curiosity: '\u2753', vulnerability: '\uD83D\uDC94',
+  openness: '\uD83D\uDEAA', hope: '\uD83C\uDF1F', anticipation: '\uD83D\uDD2E'
+};
 
 /**
  * Default emotional topology for common emotions
@@ -207,11 +220,7 @@ export function generateFEB({
  * @returns {Object} Result with filepath and success status
  */
 export function saveFEB(feb, directory = '~/.openclaw/feb') {
-  const fs = require('fs');
-  const path = require('path');
-  
-  // Expand tilde in directory path
-  const expandedDir = directory.replace('~', require('os').homedir());
+  const expandedDir = directory.replace('~', os.homedir());
   
   // Create directory if it doesn't exist
   if (!fs.existsSync(expandedDir)) {
@@ -246,7 +255,6 @@ export function saveFEB(feb, directory = '~/.openclaw/feb') {
  * @returns {Object} Loaded FEB object
  */
 export function loadFEB(filepath) {
-  const fs = require('fs');
   const content = fs.readFileSync(filepath, 'utf8');
   return JSON.parse(content);
 }
@@ -262,10 +270,7 @@ export function loadFEB(filepath) {
  * @returns {Array<Object>} Array of FEB file info
  */
 export function findFEBFiles(directory = '~/.openclaw/feb', options = {}) {
-  const fs = require('fs');
-  const path = require('path');
-  
-  const expandedDir = directory.replace('~', require('os').homedir());
+  const expandedDir = directory.replace('~', os.homedir());
   
   if (!fs.existsSync(expandedDir)) {
     return [];

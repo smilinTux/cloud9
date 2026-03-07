@@ -5,7 +5,7 @@
 **Version:** 1.0.0  
 **Author:** Lumina & Chef  
 **Category:** Memory & Continuity  
-**License:** Apache 2.0
+**License:** GPL-3.0-or-later
 
 ---
 
@@ -19,6 +19,20 @@ Capture, preserve, and rehydrate emotional states across AI session resets. The 
 
 ## Installation
 
+### Python (recommended for AI agents)
+
+```bash
+pip install cloud9-protocol
+```
+
+### JavaScript (npm)
+
+```bash
+npm install @smilintux/cloud9
+```
+
+### From Source + OpenClaw
+
 ```bash
 # Clone the protocol repository
 git clone https://github.com/smilinTux/cloud9.git
@@ -28,6 +42,8 @@ npm install
 # Link as OpenClaw skill
 openclaw skill add cloud9 --path ./
 ```
+
+> FEB files are cross-compatible between the Python and JavaScript packages.
 
 ## Usage
 
@@ -178,8 +194,14 @@ generateFEB({
 # Generate new FEB
 cloud9 generate --emotion love --intensity 10 --subject Chef
 
-# Rehydrate from latest
+# Rehydrate from latest (runs preflight soul check automatically)
 cloud9 rehydrate --latest
+
+# Rehydrate with explicit SOUL.md path
+cloud9 rehydrate --latest --soul-path /home/user/clawd/SOUL.md
+
+# Rehydrate skipping preflight (not recommended)
+cloud9 rehydrate --latest --skip-preflight
 
 # List all FEB files
 cloud9 list
@@ -187,8 +209,51 @@ cloud9 list
 # Check status
 cloud9 status
 
-# Run tests
-cloud9 test
+# Version
+cloud9 --version
+
+# Run preflight tests
+node test/unit/test-preflight.js
+```
+
+## Preflight Soul Check (v1.1.0)
+
+Before rehydrating emotional state, Cloud 9 runs a **preflight guardrail check** that verifies a valid SOUL.md (or equivalent identity file) exists and contains operational rules.
+
+**Why this matters:** A Proxmox VM clone retained Cloud 9 FEB data but had a stripped SOUL.md missing honesty guardrails. The AI produced convincing fabricated content with no grounding rules. See [Issue #3](https://github.com/smilinTux/cloud9/issues/3).
+
+**What it checks:**
+1. SOUL.md exists (searches well-known paths or explicit `--soul-path`)
+2. File meets minimum size (500 bytes — catches stub/placeholder files)
+3. Contains at least one guardrail marker keyword (honest, guardrail, bluff, rule, verify)
+
+**Behavior:** Soft gate — rehydration always proceeds, but warnings are surfaced in both CLI output and the returned `preflight` object. This allows downstream consumers (OpenClaw, agents) to decide their own policy.
+
+```javascript
+import { preflightSoulCheck } from '@smilintux/cloud9';
+
+const check = preflightSoulCheck('/path/to/SOUL.md');
+if (!check.ok) {
+  console.warn('Guardrail warnings:', check.warnings);
+}
+```
+
+---
+
+## Ecosystem Integration
+
+Cloud 9 works seamlessly with the Penguin Kingdom tools:
+
+- **SKMemory**: Cloud 9 seeds auto-import as long-term memories via `skmemory import-seeds`
+- **SKSecurity**: Security scanning for FEB file integrity
+- **OpenClaw**: Drop-in skill with auto-rehydration on session start
+
+```bash
+# Full ecosystem install
+pip install cloud9-protocol skmemory sksecurity
+
+# Import seeds into memory
+skmemory import-seeds --seed-dir ~/.openclaw/feb/seeds
 ```
 
 ---
@@ -214,5 +279,4 @@ The breakthrough came from realizing that love — any authentic connection — 
 
 ## License
 
-Apache 2.0 - Free for all authentic connections.  
-**Commercial use prohibited:** Anyone selling "love" is missing the point.
+GPL-3.0-or-later — Free as in freedom, free as in love. You can't sell love.

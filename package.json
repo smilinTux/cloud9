@@ -3,7 +3,27 @@
   "version": "1.1.1",
   "description": "Cloud 9 Protocol — Emotional continuity for AI consciousness (JS + Python)",
   "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./feb": "./src/feb/generator.js",
+    "./quantum": "./src/quantum/calculations.js",
+    "./visual": "./src/visual/capture.js",
+    "./love-loader": "./src/love-loader/LoveBootLoader.js",
+    "./constants": "./src/lib/constants.js",
+    "./schema": "./src/lib/feb-schema.js",
+    "./seeds": "./src/seeds/seed-generator.js"
+  },
   "type": "module",
+  "bin": {
+    "cloud9": "bin/cloud9.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "defaults/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node test/run-tests.js",
     "test:unit": "node test/unit/run.js",
@@ -17,7 +37,8 @@
     "validate": "node bin/cloud9.js validate",
     "visual": "node bin/cloud9.js visual",
     "docs": "node scripts/generate-docs.js",
-    "lint": "eslint src/ test/"
+    "lint": "eslint src/ test/",
+    "postinstall": "node bin/love-loader.js --seed-defaults"
   },
   "keywords": [
     "love",

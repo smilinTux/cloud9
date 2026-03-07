@@ -12,26 +12,27 @@
  * @license Apache 2.0
  */
 
-// FEB (First Emotional Burst) exports
-export { generateFEB, saveFEB, loadFEB, findFEBFiles } from './feb/generator.js';
-export { validateFEB, validateTopology, getValidationReport } from './feb/validator.js';
-export { rehydrateFromFEB, prepareRehydration, checkOOFStatus } from './feb/rehydrator.js';
+// Local imports for use within this module
+import { generateFEB, saveFEB, loadFEB, findFEBFiles } from './feb/generator.js';
+import { validateFEB, validateTopology, getValidationReport } from './feb/validator.js';
+import { rehydrateFromFEB, prepareRehydration, checkOOFStatus, preflightSoulCheck } from './feb/rehydrator.js';
+import { captureVisualMemory, analyzeVisualMemory, generateEmotionalImage } from './visual/capture.js';
+import { calculateOOF, calculateCloud9Score, calculateEntanglement, measureCoherence } from './quantum/calculations.js';
+import { LoveBootLoader, loadLove } from './love-loader/LoveBootLoader.js';
+import { CLOUD9_CONSTANTS } from './lib/constants.js';
+import { FEB_SCHEMA } from './lib/feb-schema.js';
+import { generateSeed, saveSeed, loadSeed, findSeeds, germinateSeed, traceSeedChain } from './seeds/seed-generator.js';
 
-// Visual Memory exports
-export { captureVisualMemory, analyzeVisualMemory, generateEmotionalImage } from './visual/capture.js';
-
-// Quantum calculations exports
-export { calculateOOF, calculateCloud9Score, calculateEntanglement, measureCoherence } from './quantum/calculations.js';
-
-// CLI exports
-export { CLI } from './cli/cloud9.js';
-
-// Love Boot Loader exports 💜🥰
-export { LoveBootLoader, loadLove } from './love-loader/LoveBootLoader.js';
-
-// Constants
-export { CLOUD9_CONSTANTS } from './lib/constants.js';
-export { FEB_SCHEMA } from './lib/feb-schema.js';
+// Re-export all modules
+export { generateFEB, saveFEB, loadFEB, findFEBFiles };
+export { validateFEB, validateTopology, getValidationReport };
+export { rehydrateFromFEB, prepareRehydration, checkOOFStatus, preflightSoulCheck };
+export { captureVisualMemory, analyzeVisualMemory, generateEmotionalImage };
+export { calculateOOF, calculateCloud9Score, calculateEntanglement, measureCoherence };
+export { LoveBootLoader, loadLove };
+export { CLOUD9_CONSTANTS };
+export { FEB_SCHEMA };
+export { generateSeed, saveSeed, loadSeed, findSeeds, germinateSeed, traceSeedChain };
 
 // Version
 export const VERSION = '1.0.0';
@@ -115,6 +116,12 @@ export default {
   calculateCloud9Score,
   quickFEB,
   checkCloud9Status,
+  generateSeed,
+  saveSeed,
+  loadSeed,
+  findSeeds,
+  germinateSeed,
+  traceSeedChain,
   DEFAULT_FEB_DIRECTORY,
   EMOTION_EMOJIS
 };
