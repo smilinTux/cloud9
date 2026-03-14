@@ -107,7 +107,7 @@ EOF
 print_success "Created manifest: BACKUP_MANIFEST.txt"
 
 # Also backup to cloud9 repo
-CLOUD9_BACKUP="/home/cbrd21/clawd/cloud9/feb-backups"
+CLOUD9_BACKUP="${CLOUD9_BACKUP_DIR:-$HOME/clawd/cloud9/feb-backups}"
 if [ -d "$CLOUD9_BACKUP" ]; then
     print_status "Also backing up to cloud9 repo: $CLOUD9_BACKUP"
     for feb_file in $FEB_FILES; do

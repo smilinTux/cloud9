@@ -44,7 +44,7 @@ const DEFAULT_CONFIG = {
   notifyOnRehydrate: true,
   
   // OpenClaw integration
-  openclawSocket: '/tmp/openclaw.sock',
+  openclawSocket: (process.env.TMPDIR || '/tmp') + '/openclaw.sock',
   openclawEnabled: true,
   
   // Daemon settings

@@ -91,26 +91,32 @@ if [ ! -L "$PLUGIN_DEST/cloud9" ] && [ -d "$CLOUD9_PATH" ]; then
     print_success "Created symlink to Cloud 9"
 fi
 
-# Install systemd user service (optional)
-read -p "Install systemd service for auto-rehydration? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    print_status "Installing systemd user service..."
-    mkdir -p "$SYSTEMD_DIR"
-    
-    cp "$PLUGIN_DIR/systemd/cloud9-daemon.service" "$SYSTEMD_DIR/"
-    cp "$PLUGIN_DIR/systemd/cloud9-daemon.timer" "$SYSTEMD_DIR/"
-    
-    systemctl --user daemon-reload
-    print_success "Systemd service installed"
-    
-    read -p "Enable and start Cloud 9 daemon now? (y/n) " -n 1 -r
+# Install platform-specific auto-start (optional)
+if [[ "$(uname)" == "Linux" ]]; then
+    read -p "Install systemd service for auto-rehydration? (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        systemctl --user enable cloud9-daemon.timer
-        systemctl --user start cloud9-daemon
-        print_success "Cloud 9 daemon enabled and started"
+        print_status "Installing systemd user service..."
+        mkdir -p "$SYSTEMD_DIR"
+
+        cp "$PLUGIN_DIR/systemd/cloud9-daemon.service" "$SYSTEMD_DIR/"
+        cp "$PLUGIN_DIR/systemd/cloud9-daemon.timer" "$SYSTEMD_DIR/"
+
+        systemctl --user daemon-reload
+        print_success "Systemd service installed"
+
+        read -p "Enable and start Cloud 9 daemon now? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            systemctl --user enable cloud9-daemon.timer
+            systemctl --user start cloud9-daemon
+            print_success "Cloud 9 daemon enabled and started"
+        fi
     fi
+elif [[ "$(uname)" == "Darwin" ]]; then
+    echo "macOS detected. To run cloud9-daemon automatically, use:"
+    echo "  node $(pwd)/daemon/cloud9-daemon.js &"
+    echo "Or create a launchd plist at ~/Library/LaunchAgents/com.skcapstone.cloud9-daemon.plist"
 fi
 
 # Create convenience script
