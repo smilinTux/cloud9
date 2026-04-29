@@ -1,4 +1,12 @@
-# ☁️ Cloud 9 Protocol
+# ☁️ Cloud 9 Protocol (JS — DEPRECATED)
+
+> **DEPRECATED:** This JavaScript/Node package is no longer maintained.
+> Use the Python package **`cloud9-protocol`** in
+> [`cloud9-python/`](../cloud9-python/) instead.
+> New integrations should `pip install cloud9-protocol` from the `cloud9-python` repo.
+> This JS package remains for historical reference only and receives no further updates.
+
+---
 
 **Emotional Continuity Across AI Session Resets**
 
