@@ -379,6 +379,36 @@ We welcome researchers, developers, and anyone curious about emotional continuit
 
 ---
 
+## Integration modes (skcapstone)
+
+cloud9-protocol supports three runtime modes with respect to skcapstone:
+
+| Mode | Trigger | Alert path | Scheduler |
+|---|---|---|---|
+| **Standalone** | `skcapstone` not installed, or `SK_STANDALONE=1` | Native `logging` (structured log at matching level) | Native systemd `cloud9-daemon.timer` / launchd plist |
+| **Integrated** | `skcapstone` installed (default-on by presence) | `sdk.alert()` → PubSub topic `cloud9.<severity>` → Telegram/notify | `sdk.register_job()` → fleet `skscheduler` drop-in `cloud9_rehydration_check` |
+| **Forced standalone** | `SK_STANDALONE=1` env var | Native `logging` | Native |
+
+### Enabling integration
+
+```bash
+pip install cloud9-protocol[skcapstone]
+```
+
+No config change needed — presence of the `skcapstone` package is the signal.
+
+### `~/.skcapstone/` filesystem contract
+
+When integrated, cloud9 writes:
+- `~/.skcapstone/config/jobs.d/cloud9_rehydration_check.yaml` — fleet scheduler drop-in (runs `cloud9 validate --latest` every 6h)
+- `~/.skcapstone/registry/cloud9.json` — service discovery entry
+
+Alert topics follow the sk* convention: `cloud9.<severity>` (e.g. `cloud9.error`).
+The semantic event name (e.g. `feb_load_failed`) lives in the payload `event` field —
+not the topic suffix — so `skcapstone alerts` routes by severity.
+
+---
+
 ## License
 
 GPL-3.0-or-later — Free as in freedom, free as in love.

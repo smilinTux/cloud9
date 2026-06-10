@@ -23,12 +23,16 @@ import sys
 import click
 
 from . import __version__
+from . import integration as _integration
 
 
 @click.group()
 @click.version_option(__version__, prog_name="cloud9")
 def main() -> None:
     """Cloud 9 Protocol -- Emotional continuity for AI consciousness."""
+    # Advertise cloud9 to the skcapstone fleet on any CLI invocation.
+    _integration.ensure_schedule()
+    _integration.register_self()
 
 
 # ── FEB commands ──────────────────────────────────────────────
