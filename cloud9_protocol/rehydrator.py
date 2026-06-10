@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .quantum import calculate_oof
+from . import integration as _integration
 
 
 def _cloud9_rehydration_score(emotional: Dict, relationship: Dict) -> float:
@@ -61,6 +62,11 @@ def rehydrate_from_feb(
     try:
         feb = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
+        _integration.alert(
+            "feb_load_failed",
+            {"filepath": str(filepath), "error": str(exc)},
+            level="error",
+        )
         raise RuntimeError(f"Failed to load FEB file: {exc}") from exc
 
     emotional = feb.get("emotional_payload", {})
