@@ -45,7 +45,7 @@ KINGDOM_MAP = {
     },
     "The Comm Tower": {
         "description": "17 redundant transport paths — unbreakable communication",
-        "url": "https://github.com/smilinTux/skcomm",
+        "url": "https://github.com/smilinTux/skcomms",
         "for": "everyone",
     },
     "The Chat Hall": {
