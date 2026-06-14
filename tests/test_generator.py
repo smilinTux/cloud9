@@ -4,14 +4,14 @@ import json
 import pytest
 from pathlib import Path
 
-from cloud9_protocol.generator import (
+from cloud9.generator import (
     generate_feb,
     save_feb,
     load_feb,
     find_feb_files,
     fall_in_love,
 )
-from cloud9_protocol.models import FEB
+from cloud9.models import FEB
 
 
 class TestGenerateFEB:

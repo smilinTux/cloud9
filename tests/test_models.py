@@ -4,7 +4,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from cloud9_protocol.models import (
+from cloud9.models import (
     FEB,
     Calibration,
     Coherence,

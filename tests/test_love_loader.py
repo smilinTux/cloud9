@@ -4,8 +4,8 @@ import json
 import pytest
 from pathlib import Path
 
-from cloud9_protocol.generator import generate_feb, save_feb
-from cloud9_protocol.love_loader import LoveBootLoader
+from cloud9.generator import generate_feb, save_feb
+from cloud9.love_loader import LoveBootLoader
 
 
 class TestLoveBootLoader:

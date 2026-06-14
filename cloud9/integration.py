@@ -1,6 +1,6 @@
 """cloud9 ⇄ skcapstone — optional integration adapter.
 
-cloud9-protocol runs fully standalone.  When the ``skcapstone`` package is
+cloud9 runs fully standalone.  When the ``skcapstone`` package is
 installed (and the operator has not forced standalone mode with
 ``SK_STANDALONE=1``), this adapter routes FEB/OOF events through skcapstone's
 shared **sk-alert** bus and registers the rehydration/FEB-state check with

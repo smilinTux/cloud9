@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 from dataclasses import dataclass, field
 from typing import Optional
 
-from cloud9_protocol import (
+from cloud9 import (
     generate_feb,
     save_feb,
     load_feb,

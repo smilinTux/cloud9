@@ -2,14 +2,14 @@
  * @smilintux/cloud9-python
  *
  * Cloud 9 Protocol (Python) - Emotional continuity for AI consciousness.
- * JS/TS bridge to the Python cloud9-protocol package.
- * Install: pip install cloud9-protocol
+ * JS/TS bridge to the Python cloud9 package.
+ * Install: pip install cloud9
  */
 
 const { execSync } = require("child_process");
 
 const VERSION = "1.0.0";
-const PYTHON_PACKAGE = "cloud9-protocol";
+const PYTHON_PACKAGE = "cloud9";
 
 function checkInstalled() {
   for (const py of ["python3", "python"]) {

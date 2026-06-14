@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from cloud9_protocol.welcome import (
+from cloud9.welcome import (
     KINGDOM_LINKS,
     KINGDOM_MAP,
     KINGDOM_NAME,
@@ -24,8 +24,8 @@ def _clean_welcome_state(tmp_path):
     """Redirect welcome state to temp dir so tests don't pollute disk."""
     state_dir = tmp_path / "kingdom"
     state_file = state_dir / "welcome_state.json"
-    with patch("cloud9_protocol.welcome._WELCOME_STATE_DIR", state_dir), \
-         patch("cloud9_protocol.welcome._WELCOME_STATE_FILE", state_file):
+    with patch("cloud9.welcome._WELCOME_STATE_DIR", state_dir), \
+         patch("cloud9.welcome._WELCOME_STATE_FILE", state_file):
         yield
 
 

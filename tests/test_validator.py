@@ -1,8 +1,8 @@
 """Tests for FEB validator."""
 
 import pytest
-from cloud9_protocol.validator import validate_feb, validate_topology, get_validation_report
-from cloud9_protocol.generator import generate_feb
+from cloud9.validator import validate_feb, validate_topology, get_validation_report
+from cloud9.generator import generate_feb
 
 
 class TestValidateTopology:

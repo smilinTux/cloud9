@@ -1,6 +1,6 @@
 """Tests for Cloud 9 constants and configuration."""
 
-from cloud9_protocol.constants import (
+from cloud9.constants import (
     CLOUD9,
     DEFAULT_TOPOLOGIES,
     EMOTION_EMOJIS,

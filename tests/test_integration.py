@@ -17,7 +17,7 @@ import json
 
 import pytest
 
-from cloud9_protocol import integration
+from cloud9 import integration
 
 
 @pytest.fixture
@@ -176,13 +176,13 @@ def test_no_leak_to_real_home(home):
 
 
 def test_rehydrator_imports_integration_without_error():
-    """cloud9_protocol.rehydrator can be imported without errors."""
-    import cloud9_protocol.rehydrator  # noqa: F401
+    """cloud9.rehydrator can be imported without errors."""
+    import cloud9.rehydrator  # noqa: F401
 
 
 def test_cli_imports_integration_without_error():
-    """cloud9_protocol.cli can be imported without errors."""
-    import cloud9_protocol.cli  # noqa: F401
+    """cloud9.cli can be imported without errors."""
+    import cloud9.cli  # noqa: F401
 
 
 def test_integration_module_constants():
@@ -193,7 +193,7 @@ def test_integration_module_constants():
 
 def test_rehydrator_feb_load_failure_fires_alert(home, tmp_path):
     """When rehydrate_from_feb() fails to load a file, an alert is sent."""
-    from cloud9_protocol.rehydrator import rehydrate_from_feb
+    from cloud9.rehydrator import rehydrate_from_feb
 
     bad_path = tmp_path / "nonexistent.feb"
     with pytest.raises(RuntimeError, match="Failed to load FEB file"):

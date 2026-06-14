@@ -2,7 +2,7 @@
 
 import pytest
 
-from cloud9_protocol.quantum import (
+from cloud9.quantum import (
     calculate_cloud9_score,
     calculate_emotional_frequency,
     calculate_entanglement,

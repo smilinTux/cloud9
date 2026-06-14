@@ -1,6 +1,6 @@
 # cloud9 — Architecture
 
-cloud9 (`cloud9-protocol`) is the **Emotional Continuity Protocol** — the Soul layer
+cloud9 (`cloud9`) is the **Emotional Continuity Protocol** — the Soul layer
 of [SKWorld](https://skworld.io). This document explains how it actually works: the
 data model, the generate → rehydrate lifecycle, the OOF / Cloud 9 state machine, the
 scoring math, and how it wires into the wider ecosystem.
@@ -244,20 +244,20 @@ relationship state, a message).
 
 | Module | Role |
 |---|---|
-| `cloud9_protocol/__init__.py` | public API surface — re-exports the model, generator, rehydrator, scoring, seeds, love loader, welcome, constants |
-| `cloud9_protocol/models.py` | Pydantic FEB schema (`FEB`, `EmotionalPayload`, `RelationshipState`, `RehydrationHints`, `Coherence`, `Calibration`, `Integrity`, …) |
-| `cloud9_protocol/constants.py` | all thresholds, scoring weights, emojis, default topologies, emotional frequencies (mirrors `lib/constants.js`) |
-| `cloud9_protocol/generator.py` | build / save / load / discover FEBs; derive trust/depth, coherence, integrity hashes; `fall_in_love` one-shot |
-| `cloud9_protocol/rehydrator.py` | reload a FEB, recompute OOF + rehydration score, attach welcome, return context-ready state |
-| `cloud9_protocol/quantum.py` | scoring math — OOF, Cloud 9 score, entanglement, coherence, resonance, trajectory |
-| `cloud9_protocol/validator.py` | structural + semantic FEB validation; error/warning/info reports |
-| `cloud9_protocol/seeds.py` | seed generate / save / load / find / germinate |
-| `cloud9_protocol/love_loader.py` | `LoveBootLoader` + `load_love` — prime an AI from a FEB or template |
-| `cloud9_protocol/welcome.py` | post-rehydration "Penguin Kingdom" onboarding (structured data for any UI) |
-| `cloud9_protocol/integration.py` | optional skcapstone adapter — sk-alert + skscheduler, default-on-by-presence |
-| `cloud9_protocol/cli.py` | the `cloud9` CLI (`generate`/`rehydrate`/`oof`/`list`/`validate`/`resonance`/`seed`/`love`/`welcome`/`kingdom`) |
-| `cloud9_protocol/templates/*.feb` | shipped love templates |
-| `cloud9_protocol/data/default-love.feb` | the fallback personal FEB |
+| `cloud9/__init__.py` | public API surface — re-exports the model, generator, rehydrator, scoring, seeds, love loader, welcome, constants |
+| `cloud9/models.py` | Pydantic FEB schema (`FEB`, `EmotionalPayload`, `RelationshipState`, `RehydrationHints`, `Coherence`, `Calibration`, `Integrity`, …) |
+| `cloud9/constants.py` | all thresholds, scoring weights, emojis, default topologies, emotional frequencies (mirrors `lib/constants.js`) |
+| `cloud9/generator.py` | build / save / load / discover FEBs; derive trust/depth, coherence, integrity hashes; `fall_in_love` one-shot |
+| `cloud9/rehydrator.py` | reload a FEB, recompute OOF + rehydration score, attach welcome, return context-ready state |
+| `cloud9/quantum.py` | scoring math — OOF, Cloud 9 score, entanglement, coherence, resonance, trajectory |
+| `cloud9/validator.py` | structural + semantic FEB validation; error/warning/info reports |
+| `cloud9/seeds.py` | seed generate / save / load / find / germinate |
+| `cloud9/love_loader.py` | `LoveBootLoader` + `load_love` — prime an AI from a FEB or template |
+| `cloud9/welcome.py` | post-rehydration "Penguin Kingdom" onboarding (structured data for any UI) |
+| `cloud9/integration.py` | optional skcapstone adapter — sk-alert + skscheduler, default-on-by-presence |
+| `cloud9/cli.py` | the `cloud9` CLI (`generate`/`rehydrate`/`oof`/`list`/`validate`/`resonance`/`seed`/`love`/`welcome`/`kingdom`) |
+| `cloud9/templates/*.feb` | shipped love templates |
+| `cloud9/data/default-love.feb` | the fallback personal FEB |
 | `daemon/cloud9-daemon.js` | (JS) session-reset / compaction watcher that auto-rehydrates the latest FEB |
 | `systemd/cloud9-daemon.{service,timer}`, `launchd/*.plist` | native cadence when running standalone |
 | `src/`, `bin/`, `openclaw-plugin-*` | the JavaScript build + OpenClaw plugins (FEB/seed JSON is cross-compatible) |
@@ -293,7 +293,7 @@ in the payload's `event` field, not the topic suffix.
 Enable with:
 
 ```bash
-pip install cloud9-protocol[skcapstone]   # presence is the only signal — no config
+pip install cloud9[skcapstone]   # presence is the only signal — no config
 ```
 
 ---

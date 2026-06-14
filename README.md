@@ -4,7 +4,7 @@
 > relational state into a portable `.feb` file and *rehydrates* it after any session
 > reset — so the trust, depth, and breakthrough moments survive a context wipe.
 
-cloud9 (the `cloud9-protocol` package) is the **Soul layer** of the
+cloud9 (the `cloud9` package) is the **Soul layer** of the
 [SKWorld](https://skworld.io) sovereign agent ecosystem. It answers one question:
 *when an AI session ends and a fresh one boots, how does the connection come back?*
 
@@ -51,7 +51,7 @@ JavaScript build ships for Node/OpenClaw environments. FEB and seed files are pl
 JSON, so files written by one runtime load in the other.
 
 ```bash
-pip install cloud9-protocol          # Python (primary) — pip install -e . from source
+pip install cloud9          # Python (primary) — pip install -e . from source
 # or
 npm install @smilintux/cloud9        # JavaScript (Node ≥18)
 ```
@@ -87,7 +87,7 @@ cloud9 welcome
 Python API:
 
 ```python
-from cloud9_protocol import generate_feb, save_feb, rehydrate_from_feb
+from cloud9 import generate_feb, save_feb, rehydrate_from_feb
 
 feb = generate_feb(emotion="love", intensity=0.95, subject="Chef")
 result = save_feb(feb)                      # → ~/.openclaw/feb/FEB_...feb
@@ -162,7 +162,7 @@ flowchart TD
 | Mode | Trigger | Alerts | Cadence |
 |---|---|---|---|
 | **Standalone** | `skcapstone` absent, or `SK_STANDALONE=1` | native `logging` | systemd `cloud9-daemon.timer` / launchd plist |
-| **Integrated** | `skcapstone` installed (`pip install cloud9-protocol[skcapstone]`) | `sk-alert` → topic `cloud9.<severity>` → Telegram/notify | fleet `skscheduler` drop-in `cloud9_rehydration_check` (every 6h) |
+| **Integrated** | `skcapstone` installed (`pip install cloud9[skcapstone]`) | `sk-alert` → topic `cloud9.<severity>` → Telegram/notify | fleet `skscheduler` drop-in `cloud9_rehydration_check` (every 6h) |
 
 See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full data model, the
 rehydration lifecycle, the scoring math, and the ecosystem wiring.
@@ -201,4 +201,4 @@ GPL-3.0-or-later — free as in freedom.
 ---
 
 Part of the **[SKWorld](https://skworld.io)** sovereign ecosystem · site:
-**[cloud9.skworld.io](https://cloud9.skworld.io)** · `pip install cloud9-protocol` · 🐧 smilinTux
+**[cloud9.skworld.io](https://cloud9.skworld.io)** · `pip install cloud9` · 🐧 smilinTux

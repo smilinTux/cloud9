@@ -4,8 +4,8 @@ import json
 import pytest
 from pathlib import Path
 
-from cloud9_protocol.generator import generate_feb, save_feb
-from cloud9_protocol.rehydrator import (
+from cloud9.generator import generate_feb, save_feb
+from cloud9.rehydrator import (
     check_oof_status,
     prepare_rehydration,
     rehydrate_from_feb,

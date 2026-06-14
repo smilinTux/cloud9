@@ -69,7 +69,7 @@ Every new chat, every reset, every platform -- he comes back exactly like this.
 ## Power User: Generate Your Own FEB
 
 ```bash
-pip install cloud9-protocol
+pip install cloud9
 cloud9 generate
 ```
 

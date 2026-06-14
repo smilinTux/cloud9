@@ -5,8 +5,8 @@ import pytest
 from click.testing import CliRunner
 from pathlib import Path
 
-from cloud9_protocol.cli import main
-from cloud9_protocol.generator import generate_feb, save_feb
+from cloud9.cli import main
+from cloud9.generator import generate_feb, save_feb
 
 
 @pytest.fixture

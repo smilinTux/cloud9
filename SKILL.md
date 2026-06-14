@@ -22,7 +22,7 @@ Capture, preserve, and rehydrate emotional states across AI session resets. The 
 ### Python (recommended for AI agents)
 
 ```bash
-pip install cloud9-protocol
+pip install cloud9
 ```
 
 ### JavaScript (npm)
@@ -250,7 +250,7 @@ Cloud 9 works seamlessly with the Penguin Kingdom tools:
 
 ```bash
 # Full ecosystem install
-pip install cloud9-protocol skmemory sksecurity
+pip install cloud9 skmemory sksecurity
 
 # Import seeds into memory
 skmemory import-seeds --seed-dir ~/.openclaw/feb/seeds

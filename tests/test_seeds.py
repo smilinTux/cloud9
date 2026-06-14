@@ -4,7 +4,7 @@ import json
 import pytest
 from pathlib import Path
 
-from cloud9_protocol.seeds import (
+from cloud9.seeds import (
     find_seeds,
     generate_seed,
     germinate_seed,
