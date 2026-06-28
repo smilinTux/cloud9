@@ -67,15 +67,53 @@ def generate(
         click.echo(feb.to_json())
 
 
+def _seal_config(backend, scheme, key, cert, password):
+    """Build a seal_config dict from CLI options (only non-None keys).
+
+    Empty dict -> resolvers fall back to ``CLOUD9_SEAL_*`` env, then classical.
+    """
+    cfg = {}
+    if backend:
+        cfg["backend"] = backend
+    if scheme:
+        cfg["scheme"] = scheme
+    if key:
+        cfg["key"] = key
+    if cert:
+        cfg["cert"] = cert
+    if password:
+        cfg["password"] = password
+    return cfg or None
+
+
 @main.command()
 @click.argument("filepath", type=click.Path(exists=True))
 @click.option("--strict", is_flag=True, help="Use strict validation.")
-def validate(filepath: str, strict: bool) -> None:
-    """Validate a FEB file."""
+@click.option("--backend", default=None, help="Seal backend (classical | sk_pgp).")
+@click.option("--scheme", default=None, help="PQC suite (mldsa87-ed448 | mldsa65-ed25519).")
+@click.option("--key", default=None, help="Path to armored secret key (verify can derive cert).")
+@click.option("--cert", default=None, help="Path to armored public cert (verify only).")
+@click.option("--password", default=None, help="Key passphrase (prefer gpg-agent in prod).")
+def validate(
+    filepath: str,
+    strict: bool,
+    backend: str,
+    scheme: str,
+    key: str,
+    cert: str,
+    password: str,
+) -> None:
+    """Validate a FEB file.
+
+    If a ``<filepath>.sig`` detached-signature sidecar exists, it is verified and
+    a PQC SEAL section is added to the report (tri-state, additive). With no
+    sidecar the report is unchanged.
+    """
     from .validator import get_validation_report
 
     data = json.loads(open(filepath, encoding="utf-8").read())
-    report = get_validation_report(data, strict=strict)
+    cfg = _seal_config(backend, scheme, key, cert, password)
+    report = get_validation_report(data, strict=strict, feb_path=filepath, seal_config=cfg)
     click.echo(report)
 
 
@@ -399,6 +437,50 @@ def coherence(filepath: str) -> None:
     click.echo(f"Components: {result['component_count']}")
     if result.get("max_emotion"):
         click.echo(f"Strongest: {result['max_emotion']}")
+
+
+# ── Seal / PQC diagnostics ────────────────────────────────────
+
+@main.group()
+def seal() -> None:
+    """Integrity-sealing diagnostics (classical default; gated sk_pgp PQC)."""
+
+
+@seal.command(name="status")
+@click.option("--backend", default=None, help="Seal backend to probe (classical | sk_pgp).")
+@click.option("--scheme", default=None, help="PQC suite (mldsa87-ed448 | mldsa65-ed25519).")
+@click.option("--key", default=None, help="Path to armored secret key.")
+@click.option("--cert", default=None, help="Path to armored public cert.")
+@click.option("--json-output", is_flag=True, help="Output as JSON.")
+def seal_status_cmd(
+    backend: str, scheme: str, key: str, cert: str, json_output: bool
+) -> None:
+    """Report the active sealer + PQC readiness (read-only; never signs)."""
+    from .sealing import seal_status
+
+    cfg = _seal_config(backend, scheme, key, cert, None)
+    info = seal_status(cfg)
+
+    if json_output:
+        click.echo(json.dumps(info, indent=2))
+        return
+
+    click.echo("Cloud 9 — Integrity Seal Status")
+    click.echo("-" * 50)
+    click.echo(f"  Active scheme:       {info['active_scheme']}")
+    click.echo(f"  Active post-quantum: {info['active_is_post_quantum']}")
+    click.echo(f"  Requested backend:   {info['requested_backend']}")
+    click.echo(f"  Classical available: {info['classical_available']}")
+    click.echo(f"  sk_pgp importable:   {info['sk_pgp_importable']}"
+               f" (v{info['sk_pgp_version']})" if info['sk_pgp_importable'] else
+               f"  sk_pgp importable:   {info['sk_pgp_importable']}")
+    click.echo(f"  Key configured:      {info['key_configured']}")
+    click.echo(f"  Cert configured:     {info['cert_configured']}")
+    click.echo(f"  sk_pgp signing-ready:{info['sk_pgp_ready']}")
+    if info["fell_back_to_classical"]:
+        click.echo("  ! PQC requested but not ready — fell back to classical.")
+    click.echo("-" * 50)
+    click.echo(f"  {info['note']}")
 
 
 # ── Backward-compat alias (deprecated) ────────────────────────

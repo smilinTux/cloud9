@@ -353,16 +353,36 @@ def get_sealer(config: Optional[Dict[str, Any]] = None) -> Sealer:
 
 
 def seal_status(config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Introspection helper for CLI/diagnostics. Side-effect free."""
+    """Introspection helper for CLI/diagnostics. Side-effect free.
+
+    Reports the *active* sealer (after the honest classical fallback), what was
+    *requested*, and whether the PQC backend is actually ready -- so an operator
+    can tell at a glance whether enabling ``sk_pgp`` would sign or silently fall
+    back to classical.
+    """
+    config = config or {}
     sealer = get_sealer(config)
     sk = _sk_pgp()
+    requested_backend = (
+        config.get("backend") or os.environ.get(ENV_BACKEND) or "classical"
+    ).lower()
+    key_configured = bool(config.get("key") or os.environ.get(ENV_KEY))
+    cert_configured = bool(config.get("cert") or os.environ.get(ENV_CERT))
+    wants_pqc = requested_backend in ("sk_pgp", "skpgp", "pqc")
+    active_is_pq = sealer.scheme.startswith("sk_pgp:")
     return {
         "active_scheme": sealer.scheme,
-        "active_is_post_quantum": sealer.scheme.startswith("sk_pgp:"),
+        "active_is_post_quantum": active_is_pq,
+        "requested_backend": requested_backend,
         "classical_available": True,
         "sk_pgp_importable": sk is not None,
         "sk_pgp_version": getattr(sk, "__version__", None) if sk else None,
-        "key_configured": bool(os.environ.get(ENV_KEY) or (config or {}).get("key")),
+        "key_configured": key_configured,
+        "cert_configured": cert_configured,
+        # Signing-ready: PQC requested, package present, signing key configured.
+        "sk_pgp_ready": bool(wants_pqc and sk is not None and key_configured),
+        # If PQC was asked for but we resolved to classical, we fell back.
+        "fell_back_to_classical": bool(wants_pqc and not active_is_pq),
         "note": (
             "post-quantum / quantum-resistant via composite ML-DSA + EdDSA "
             "(FIPS 203/204) -- NOT quantum-proof; hybrid = valid iff both legs verify"

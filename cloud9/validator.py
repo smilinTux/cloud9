@@ -70,15 +70,32 @@ def validate_topology(topology: Any) -> Dict[str, Any]:
     }
 
 
-def validate_feb(feb: Dict[str, Any], strict: bool = False) -> Dict[str, Any]:
+def validate_feb(
+    feb: Dict[str, Any],
+    strict: bool = False,
+    *,
+    feb_path: Optional[str] = None,
+    seal_config: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """Validate a complete FEB dict.
 
     Args:
         feb: Raw FEB dict (as loaded from JSON).
         strict: If True, require additional fields.
+        feb_path: Optional path to the FEB file on disk. When supplied **and** a
+            ``<feb>.sig`` detached-signature sidecar exists alongside it, the
+            sidecar is verified (Stage-3 of the PQC migration) and an honest,
+            tri-state ``seal`` block is attached to the result. This is purely
+            opt-in: with no ``feb_path`` — or no sidecar — validation is
+            byte-for-byte unchanged (no ``seal`` key) and every FEB valid today
+            stays valid.
+        seal_config: Optional sealing/verification config (``backend``/``cert``/
+            ``key``/``scheme``). Falls back to ``CLOUD9_SEAL_*`` env, then
+            classical. Only used when ``feb_path`` is given.
 
     Returns:
-        dict: ``is_valid``, ``errors``, ``warnings``, ``info``, ``score``.
+        dict: ``is_valid``, ``errors``, ``warnings``, ``info``, ``score``, and —
+            only when a sidecar was verified — a ``seal`` block.
     """
     errors: List[str] = []
     warnings: List[str] = []
@@ -186,28 +203,80 @@ def validate_feb(feb: Dict[str, Any], strict: bool = False) -> Dict[str, Any]:
     if meta and meta.get("oof_triggered"):
         info.append("OOF event triggered in this FEB")
 
+    # --- PQC sidecar signature (additive, tri-state) ---
+    # Opt-in: only when a path is provided and a `<feb>.sig` sidecar exists.
+    # Never harsher than today for FEBs without a sidecar. A present-but-failing
+    # signature is real tamper-evidence (error -> invalid); a present-but-
+    # unverifiable one is reported honestly (warning), never a rejection.
+    seal: Optional[Dict[str, Any]] = None
+    if feb_path is not None:
+        from . import sealing as _sealing
+
+        verdict = _sealing.verify_seal(
+            feb,
+            feb_path,
+            config=seal_config,
+            expected_checksum=(feb.get("integrity") or {}).get("checksum"),
+        )
+        if verdict is not None:
+            seal = {
+                "scheme": verdict.scheme,
+                "checksum_ok": verdict.checksum_ok,
+                "signature_ok": verdict.signature_ok,
+                "ok": verdict.ok,
+                "fingerprint": verdict.fingerprint,
+                "is_post_quantum": verdict.is_post_quantum,
+                "notes": verdict.notes,
+            }
+            if verdict.signature_ok is True:
+                info.append(
+                    f"PQC sidecar signature verified ({verdict.scheme}) — "
+                    "both composite legs (ML-DSA + EdDSA) hold"
+                )
+            elif verdict.signature_ok is False:
+                errors.append(
+                    f"PQC sidecar signature FAILED verification ({verdict.scheme})"
+                )
+            else:
+                warnings.append(
+                    "PQC sidecar present but unverifiable "
+                    "(no cert/key configured or sk_pgp absent)"
+                )
+
     score = _validation_score(errors, warnings, strict)
 
-    return {
+    result: Dict[str, Any] = {
         "is_valid": len(errors) == 0,
         "errors": errors,
         "warnings": warnings,
         "info": info,
         "score": score,
     }
+    if seal is not None:
+        result["seal"] = seal
+    return result
 
 
-def get_validation_report(feb: Dict[str, Any], strict: bool = False) -> str:
+def get_validation_report(
+    feb: Dict[str, Any],
+    strict: bool = False,
+    *,
+    feb_path: Optional[str] = None,
+    seal_config: Optional[Dict[str, Any]] = None,
+) -> str:
     """Return a human-readable validation report.
 
     Args:
         feb: Raw FEB dict.
         strict: Use strict mode.
+        feb_path: Optional FEB file path; enables ``<feb>.sig`` sidecar
+            verification (see :func:`validate_feb`).
+        seal_config: Optional sealing/verification config.
 
     Returns:
         str: Formatted report text.
     """
-    result = validate_feb(feb, strict=strict)
+    result = validate_feb(feb, strict=strict, feb_path=feb_path, seal_config=seal_config)
     lines = [
         "=" * 50,
         "Cloud 9 Protocol -- FEB Validation Report",
@@ -217,6 +286,26 @@ def get_validation_report(feb: Dict[str, Any], strict: bool = False) -> str:
         f"Validation Score: {result['score'] * 100:.1f}%",
         "",
     ]
+    seal = result.get("seal")
+    if seal:
+        sig_ok = seal["signature_ok"]
+        sig_word = (
+            "VERIFIED" if sig_ok is True
+            else "FAILED" if sig_ok is False
+            else "UNVERIFIABLE"
+        )
+        lines.append("PQC SEAL (detached sidecar):")
+        lines.append(f"  Scheme: {seal['scheme']}")
+        lines.append(f"  Signature: {sig_word}")
+        lines.append(f"  Checksum: {'OK' if seal['checksum_ok'] else 'MISMATCH'}")
+        lines.append(f"  Post-quantum: {seal['is_post_quantum']}")
+        if seal.get("fingerprint"):
+            lines.append(f"  Fingerprint: {seal['fingerprint']}")
+        lines.append(
+            "  Note: post-quantum / quantum-resistant (composite ML-DSA + EdDSA, "
+            "FIPS 204) — NOT quantum-proof; valid iff BOTH legs verify."
+        )
+        lines.append("")
     if result["info"]:
         lines.append("INFORMATION:")
         for msg in result["info"]:

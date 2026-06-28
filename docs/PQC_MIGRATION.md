@@ -181,10 +181,14 @@ removed.**
 - No generate/rehydrate/validate behaviour changes. `sk_pgp` is **not** a
   dependency (optional extra only).
 
-### Stage 1 — Optional dependency + diagnostics (additive)
-- Add `pqc = ["sk_pgp>=0.x"]` to `pyproject.toml` `[project.optional-dependencies]`.
-- Add a read-only `cloud9 seal status` CLI command surfacing `seal_status()`.
-- **Gate:** nothing signs yet; purely observability.
+### Stage 1 — Optional dependency + diagnostics (additive) — **DONE**
+- `pqc = ["sk_pgp>=0.1.0"]` added to `pyproject.toml`
+  `[project.optional-dependencies]` (install with `pip install 'cloud9[pqc]'`).
+- `cloud9 seal status [--backend … --key … --cert … --scheme … --json-output]`
+  surfaces `sealing.seal_status()`: active scheme, requested backend, whether
+  `sk_pgp` is importable, key/cert configured, `sk_pgp_ready` (signing-ready),
+  and `fell_back_to_classical`. Read-only — it never signs or mutates anything.
+- **Gate:** nothing signs; purely observability.
 
 ### Stage 2 — Opt-in detached signing (write side, sidecar) — **DONE**
 - `save_feb(feb, …, seal_config=…)` now calls `sealing.write_seal()` after
@@ -201,11 +205,19 @@ removed.**
 - Helpers added: `sealing.write_seal`, `sealing.sidecar_path_for`,
   `sealing.SIDECAR_SUFFIX` (`.sig`).
 
-### Stage 3 — Opt-in verification (read side) — **DONE (rehydrate)**
+### Stage 3 — Opt-in verification (read side) — **DONE (rehydrate + validate)**
 - `rehydrate_from_feb(filepath, …, seal_config=…)` now calls
   `sealing.verify_seal()`. If a `<feb>.sig` sidecar exists it is verified and
   the verdict is attached at `state["rehydration"]["seal"]`. Missing sidecar =
   today's behaviour (the key is simply absent → zero shape change).
+- `validate_feb(feb, …, feb_path=…, seal_config=…)` **also** verifies a present
+  sidecar now. It attaches a tri-state `seal` block and folds the verdict into
+  the report honestly: `signature_ok=True` → info line + still valid;
+  `signature_ok=False` → **error → `is_valid=False`** (real tamper-evidence,
+  only ever for FEBs that opted into a sidecar); `signature_ok=None` → warning,
+  still valid. With no `feb_path`/sidecar the result is byte-for-byte unchanged
+  (no `seal` key). `cloud9 validate <feb>` auto-verifies a sidecar and renders a
+  `PQC SEAL` report section.
 - A new `sealing.get_verifier()` resolves a *verification-only* sealer (needs
   only a public cert or a key to derive it — laxer than `get_sealer`, which
   gates on a signing key).
@@ -213,8 +225,6 @@ removed.**
   valid today. A present-but-failing signature → explicit `signature_ok=False`;
   a present-but-unverifiable signature (no cert / `sk_pgp` absent) →
   `signature_ok=None` (honest "unverifiable"), `ok` still rides on the checksum.
-- `validate_feb` sidecar verification remains a future follow-up (rehydrate is
-  the live read path).
 
 ### Stage 4 — Enforcement (opt-in, per-deployment, far future)
 - A deployment may set a strict policy ("require valid PQC sidecar for FEBs newer

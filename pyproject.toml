@@ -36,6 +36,14 @@ dependencies = [
 skcapstone = [
     "skcapstone>=0.6.8",
 ]
+# Opt-in post-quantum sealing backend. cloud9 adds NO cryptography of its own;
+# all PQC assurance rests on sk_pgp (sequoia-openpgp + liboqs), which provides
+# the composite ML-DSA-87 + Ed448 (FIPS 204 + RFC 8032) detached signatures.
+# Post-quantum / quantum-resistant — NOT "quantum-proof"; valid iff both legs
+# verify. Without this extra, cloud9 runs unchanged on the classical default.
+pqc = [
+    "sk_pgp>=0.1.0",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
