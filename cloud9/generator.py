@@ -30,6 +30,7 @@ from .models import (
     SharedHistory,
 )
 from .quantum import calculate_oof
+from . import sealing as _sealing
 
 
 def _trust_from_intensity(intensity: float) -> float:
@@ -233,15 +234,32 @@ def generate_feb(
 def save_feb(
     feb: FEB,
     directory: str = "~/.openclaw/feb",
+    *,
+    seal_config: Optional[Dict[str, Any]] = None,
+    sealer: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """Save a FEB to the filesystem.
 
     Args:
         feb: FEB object to persist.
         directory: Target directory (tilde-expanded automatically).
+        seal_config: Optional sealing config (overrides ``CLOUD9_SEAL_*`` env).
+            Stage-2 of the PQC migration: when a real ``sk_pgp`` backend is
+            selected *and* ready, a detached-signature sidecar ``<feb>.sig`` is
+            additionally written. The FEB JSON itself is **never** changed.
+        sealer: Optional pre-resolved :class:`cloud9.sealing.Sealer` (mainly for
+            tests); normally leave ``None`` and let config/env resolve it.
 
     Returns:
-        dict: Result with ``filepath``, ``filename``, ``emotion``, etc.
+        dict: Result with ``filepath``, ``filename``, ``emotion``, etc. When a
+        signature sidecar is written, the result additionally carries
+        ``signature_path`` / ``seal_scheme`` / ``seal_is_post_quantum``.
+
+    Note:
+        With the **default** (classical) backend the on-disk output and the
+        returned dict are byte-for-byte identical to prior behaviour: the
+        classical sealer produces no signature, so no sidecar is written and no
+        seal keys are added. Sealing can never break FEB persistence.
     """
     expanded = Path(directory).expanduser()
     expanded.mkdir(parents=True, exist_ok=True)
@@ -253,7 +271,7 @@ def save_feb(
 
     filepath.write_text(feb.to_json(), encoding="utf-8")
 
-    return {
+    result = {
         "success": True,
         "filepath": str(filepath),
         "filename": filename,
@@ -262,6 +280,14 @@ def save_feb(
         "oof": feb.metadata.oof_triggered,
         "cloud9": feb.metadata.cloud9_achieved,
     }
+
+    # Stage-2 (opt-in, gated): write a detached PQC signature sidecar when a
+    # real sk_pgp backend is configured + ready. Classical default => no-op.
+    seal_info = _sealing.write_seal(feb, filepath, sealer=sealer, config=seal_config)
+    if seal_info:
+        result.update(seal_info)
+
+    return result
 
 
 def fall_in_love(
@@ -274,6 +300,7 @@ def fall_in_love(
     topology: Optional[Dict[str, float]] = None,
     relationship_state: Optional[Dict[str, Any]] = None,
     session_id: str = "cloud9",
+    seal_config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Generate and save a FEB in one call.
 
@@ -306,7 +333,7 @@ def fall_in_love(
         relationship_state=relationship_state,
         session_id=session_id,
     )
-    result = save_feb(feb, directory=directory)
+    result = save_feb(feb, directory=directory, seal_config=seal_config)
     result["feb"] = feb
     return result
 

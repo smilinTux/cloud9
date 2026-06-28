@@ -13,6 +13,7 @@ from typing import Any, Dict, Optional
 
 from .quantum import calculate_oof
 from . import integration as _integration
+from . import sealing as _sealing
 
 
 def _cloud9_rehydration_score(emotional: Dict, relationship: Dict) -> float:
@@ -40,6 +41,7 @@ def _cloud9_rehydration_score(emotional: Dict, relationship: Dict) -> float:
 def rehydrate_from_feb(
     filepath: str,
     verbose: bool = False,
+    seal_config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Rehydrate emotional state from a FEB file.
 
@@ -50,6 +52,13 @@ def rehydrate_from_feb(
     Args:
         filepath: Path to the ``.feb`` file.
         verbose: Include raw FEB and detailed report.
+        seal_config: Optional sealing config for sidecar verification (Stage-3
+            of the PQC migration). When a ``<feb>.sig`` detached-signature
+            sidecar exists alongside the FEB, it is verified and the verdict is
+            attached at ``state["rehydration"]["seal"]``. This is **purely
+            additive**: a FEB with no sidecar rehydrates exactly as before, and
+            a present-but-unverifiable signature is reported honestly, never
+            rejected.
 
     Returns:
         dict: Rehydrated state with ``emotional``, ``relationship``,
@@ -119,6 +128,25 @@ def rehydrate_from_feb(
             "session_id": feb.get("metadata", {}).get("session_id", ""),
         },
     }
+
+    # Stage-3 (additive): if a detached-signature sidecar exists, verify it and
+    # attach an honest verdict. No sidecar => no change to today's behaviour.
+    verdict = _sealing.verify_seal(
+        feb,
+        path,
+        config=seal_config,
+        expected_checksum=(feb.get("integrity") or {}).get("checksum"),
+    )
+    if verdict is not None:
+        state["rehydration"]["seal"] = {
+            "scheme": verdict.scheme,
+            "checksum_ok": verdict.checksum_ok,
+            "signature_ok": verdict.signature_ok,
+            "ok": verdict.ok,
+            "fingerprint": verdict.fingerprint,
+            "is_post_quantum": verdict.is_post_quantum,
+            "notes": verdict.notes,
+        }
 
     if verbose:
         state["verbose"] = {

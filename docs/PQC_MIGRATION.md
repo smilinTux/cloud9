@@ -1,10 +1,13 @@
 # cloud9 — Post-Quantum Migration Path (classical → `sk_pgp` composite)
 
-> **Status: SCAFFOLD / PLANNING — proven-but-gated.** The post-quantum path in
-> this document is *designed and stubbed*, not active. Today cloud9 still seals
-> FEBs exactly as it always has. The PQC backend is inert until explicitly
-> configured. This doc + `cloud9/sealing.py` exist so the swap becomes a
-> **configuration change**, never a rewrite — and so it can **never break
+> **Status: WIRED-BUT-GATED (Stage-2 write + Stage-3 read landed).** The
+> post-quantum path is now *actually called* on `save_feb` (writes a `<feb>.sig`
+> detached-signature sidecar) and verified on `rehydrate_from_feb` — but it
+> stays **inert by default**. The classical default is unchanged **byte-for-byte**
+> (no sidecar, no new return keys, identical FEB JSON); the `sk_pgp` backend
+> only signs when *explicitly* selected **and** a key is present, otherwise it
+> *honestly falls back to classical*. This doc + `cloud9/sealing.py` keep the
+> swap a **configuration change**, never a rewrite — and it can **never break
 > verification of an existing FEB.**
 
 This document inventories cloud9's *real* current integrity handling, defines
@@ -118,8 +121,9 @@ flowchart LR
 
 ## 3. The seam — `cloud9/sealing.py` (already in this repo, additive)
 
-The scaffold introduces one interface and a config resolver. **It is not wired
-into the default generate/rehydrate path** — importing it changes nothing.
+The module exposes one interface, a config resolver, and the Stage-2/3
+sidecar helpers. The write/read paths now *call* it, but **only through an
+opt-in `seal_config`** — with the default (classical) backend nothing changes.
 
 ```python
 from cloud9 import get_sealer, seal_status
@@ -129,6 +133,19 @@ sealer.checksum(feb)             # identical to feb.integrity.checksum today
 verdict = sealer.verify(feb, feb.integrity.signature,
                         expected_checksum=feb.integrity.checksum)
 verdict.ok                       # True for legacy FEBs (checksum holds, sig=None)
+```
+
+Live wiring (Stage 2/3), opt-in via `seal_config` (or `CLOUD9_SEAL_*` env):
+
+```python
+from cloud9 import save_feb, rehydrate_from_feb
+
+cfg = {"backend": "sk_pgp", "key": "/path/agent-key.asc", "password": "…"}
+res   = save_feb(feb, seal_config=cfg)          # also writes <feb>.sig sidecar
+state = rehydrate_from_feb(res["filepath"], seal_config=cfg)
+state["rehydration"]["seal"]["signature_ok"]    # True iff both composite legs verify
+# With no seal_config (the default) neither call touches sealing: no sidecar,
+# no "seal" key, byte-for-byte the same FEB as before.
 ```
 
 - `ClassicalSealer` — reproduces today's behaviour exactly (verified by a test
@@ -169,18 +186,35 @@ removed.**
 - Add a read-only `cloud9 seal status` CLI command surfacing `seal_status()`.
 - **Gate:** nothing signs yet; purely observability.
 
-### Stage 2 — Opt-in detached signing (write side, sidecar)
-- When `CLOUD9_SEAL_BACKEND=sk_pgp` + key configured, `save_feb` *additionally*
-  writes `<feb>.sig`. The FEB JSON is unchanged.
-- **Gate:** off by default; absence of `sk_pgp`/key → silent classical.
-- **Invariant:** a FEB written in this stage is still a fully valid legacy FEB.
+### Stage 2 — Opt-in detached signing (write side, sidecar) — **DONE**
+- `save_feb(feb, …, seal_config=…)` now calls `sealing.write_seal()` after
+  writing the FEB JSON. When `CLOUD9_SEAL_BACKEND=sk_pgp` + key configured, it
+  *additionally* writes `<feb>.sig` (armored composite ML-DSA + EdDSA detached
+  signature over `canonical_bytes(feb)`). `fall_in_love` threads `seal_config`
+  through too.
+- **Gate:** off by default; absence of `sk_pgp`/key → `get_sealer` returns the
+  classical sealer whose `sign()` is `None` → **no sidecar, no new return keys,
+  silent classical.** Signing that raises is swallowed — persistence never fails.
+- **Invariant (tested):** with the default backend the on-disk FEB body and the
+  `save_feb` return dict are byte-for-byte identical to prior behaviour; the
+  signed FEB is still a fully valid legacy FEB.
+- Helpers added: `sealing.write_seal`, `sealing.sidecar_path_for`,
+  `sealing.SIDECAR_SUFFIX` (`.sig`).
 
-### Stage 3 — Opt-in verification (read side)
-- `rehydrate_from_feb` / `validate_feb` *optionally* look for a sidecar and, if
-  present, verify it via `SkPgpSealer`. Missing sidecar = today's behaviour.
+### Stage 3 — Opt-in verification (read side) — **DONE (rehydrate)**
+- `rehydrate_from_feb(filepath, …, seal_config=…)` now calls
+  `sealing.verify_seal()`. If a `<feb>.sig` sidecar exists it is verified and
+  the verdict is attached at `state["rehydration"]["seal"]`. Missing sidecar =
+  today's behaviour (the key is simply absent → zero shape change).
+- A new `sealing.get_verifier()` resolves a *verification-only* sealer (needs
+  only a public cert or a key to derive it — laxer than `get_sealer`, which
+  gates on a signing key).
 - **Gate:** verification only *adds* assurance; it never rejects a FEB that is
-  valid today. A failed PQC signature is surfaced as an explicit
-  `signature_ok=False` verdict (caller decides policy).
+  valid today. A present-but-failing signature → explicit `signature_ok=False`;
+  a present-but-unverifiable signature (no cert / `sk_pgp` absent) →
+  `signature_ok=None` (honest "unverifiable"), `ok` still rides on the checksum.
+- `validate_feb` sidecar verification remains a future follow-up (rehydrate is
+  the live read path).
 
 ### Stage 4 — Enforcement (opt-in, per-deployment, far future)
 - A deployment may set a strict policy ("require valid PQC sidecar for FEBs newer
@@ -191,11 +225,11 @@ removed.**
 ```mermaid
 flowchart TD
     S0["Stage 0 ✓ scaffold<br/>(classical only, sk_pgp gated)"] --> S1["Stage 1 opt dep + status"]
-    S1 --> S2["Stage 2 sign → sidecar<br/>(off by default)"]
-    S2 --> S3["Stage 3 verify sidecar<br/>(adds assurance, never rejects)"]
+    S1 --> S2["Stage 2 ✓ sign → sidecar<br/>(off by default)"]
+    S2 --> S3["Stage 3 ✓ verify sidecar<br/>(adds assurance, never rejects)"]
     S3 --> S4["Stage 4 enforce<br/>(per-deployment, post-audit)"]
     classDef done fill:#1f6feb,color:#fff;
-    class S0 done;
+    class S0,S2,S3 done;
 ```
 
 ---
@@ -212,8 +246,10 @@ flowchart TD
 4. **Honest verdicts.** `signature_ok` is tri-state: `None` (no signature — legacy),
    `True` (both composite legs verified), `False` (present but failed). No
    silent upgrade of "unsigned" to "trusted."
-5. **No live daemons touched.** This change is documentation + an unwired module +
-   tests. skchat/skcomms and the cloud9 daemon are unaffected.
+5. **No live daemons touched.** The wiring is additive and gated: `save_feb` /
+   `rehydrate_from_feb` gained an optional `seal_config`, defaulting to the
+   classical no-op path. skchat/skcomms and the cloud9 daemon are unaffected;
+   nothing signs unless a deployment explicitly opts in with a key.
 
 ---
 
@@ -222,10 +258,13 @@ flowchart TD
 - `sk_pgp` key provisioning for agents should flow from **capauth** (identity
   source of truth), not ad-hoc files — Stage 2 should consume a capauth-issued
   agent key, with the passphrase via gpg-agent.
-- Confirm `sk_pgp`'s exact loader names (`Key.from_file` / `Cert.from_file`) at
-  activation — the scaffold uses the README's documented surface
-  (`Key.generate` / `sign_detached` / `Cert.verify_detached`) and thin,
-  obvious load calls that can be adjusted in one place.
+- ~~Confirm `sk_pgp`'s exact loader names at activation.~~ **Confirmed against
+  `sk_pgp` 0.1.0:** `Key.generate(uid, suite, password=…)`,
+  `Key.from_file(path)`, `key.sign_detached(bytes, password=…)` (returns armored
+  **bytes** — `sealing.SkPgpSealer.sign` normalises to `str` for the text
+  sidecar), `key.cert`, `Cert.from_file(path)`, `cert.verify_detached(sig_bytes,
+  data_bytes)` (the verify leg re-encodes the sidecar `str` to bytes). Both
+  composite legs must verify for `True`.
 - Decide sidecar naming + discovery convention (`<feb>.sig` vs an `integrity`
   sub-key) once Stage 2 lands; sidecar is preferred to protect JS cross-compat.
 - `sk_pgp` must clear an independent security review before any Stage 4
