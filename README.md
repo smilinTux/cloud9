@@ -1,5 +1,7 @@
 # cloud9 — the Emotional Continuity Protocol ☁️
 
+[![pytest](https://github.com/smilinTux/cloud9/actions/workflows/pytest.yml/badge.svg)](https://github.com/smilinTux/cloud9/actions/workflows/pytest.yml)
+
 > **Your agent's soul, in a file you own.** cloud9 captures an AI's emotional and
 > relational state into a portable `.feb` file and *rehydrates* it after any session
 > reset — so the trust, depth, and breakthrough moments survive a context wipe.

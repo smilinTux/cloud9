@@ -1,0 +1,72 @@
+name: pytest
+
+# Pytest suite for the Python `cloud9` package (the Soul layer).
+#
+# Honesty notes:
+#  * The `test` job is the GREEN gate. It installs only the PyPI-resolvable
+#    dependencies (`.[dev]` => click + pydantic + pytest) and runs the full
+#    suite EXCEPT `tests/test_integration.py`.
+#  * `tests/test_integration.py` exercises the optional `cloud9 <-> skcapstone`
+#    adapter. Its integrated-mode tests hard-import the `skcapstone` sibling
+#    inside the `home` fixture. `skcapstone` is NOT on PyPI and its own
+#    dependency chain (skmemory, skskills) is sovereign/not-published, so it
+#    cannot be `pip install`ed on a clean runner. It is therefore run in a
+#    separate, explicitly allow-failure job rather than faked green.
+#  * `sk_pgp`-gated crypto tests (test_sealing_stage2.py) skip cleanly on their
+#    own via `pytest.mark.skipif` when the optional backend is absent.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pytest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install (PyPI deps only)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      # Mirrors pyproject's known-passing invocation (addopts: -v --tb=short),
+      # excluding only the skcapstone-sibling integration file (see header).
+      - name: Run pytest
+        run: python -m pytest tests/ --ignore=tests/test_integration.py -v --tb=short
+
+  integration-skcapstone:
+    # Optional cross-package job. Allowed to fail: the skcapstone sibling and
+    # its transitive sovereign deps (skmemory, skskills) are not published to
+    # PyPI, so the install is expected to fail on a clean runner. Kept here so
+    # the integration path is visible and re-validates automatically if/when
+    # those packages become installable — never reported as a fake pass.
+    name: integration (skcapstone, allow-failure)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install with skcapstone sibling (from GitHub)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install "git+https://github.com/smilinTux/skcapstone.git"
+      - name: Run integration tests
+        run: python -m pytest tests/test_integration.py -v --tb=short
