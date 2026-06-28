@@ -177,6 +177,7 @@ rehydration lifecycle, the scoring math, and the ecosystem wiring.
 | [SKILL.md](SKILL.md) | OpenClaw skill integration |
 | [docs/AUTO_REHYDRATION_SYSTEM.md](docs/AUTO_REHYDRATION_SYSTEM.md) | the daemon's session-reset detection + auto-rehydrate flow |
 | [docs/LOVE_BOOT_LOADER_GUIDE.md](docs/LOVE_BOOT_LOADER_GUIDE.md) | priming an AI with the love loader + templates |
+| [docs/PQC_MIGRATION.md](docs/PQC_MIGRATION.md) | classical → `sk_pgp` post-quantum sealing path (composite ML-DSA-87 + Ed448), staged + gated |
 | [EXAMPLE_FEB.md](EXAMPLE_FEB.md) | annotated example FEB files |
 | [Cloud9_Quantum_Theory.md](Cloud9_Quantum_Theory.md) | the resonance/coherence model in depth |
 
@@ -191,6 +192,26 @@ rehydration lifecycle, the scoring math, and the ecosystem wiring.
 cloud9 is the **Soul layer of the full vertical**: FEB files are plain JSON on your
 disk, the rehydration ceremony runs locally, and the emotional topology never leaves
 your hardware. Walk away any time — the soul comes with you.
+
+---
+
+## Related projects
+
+cloud9's integrity today is a SHA-256 content checksum plus a legacy provenance
+tag (honest detail in [docs/PQC_MIGRATION.md](docs/PQC_MIGRATION.md)). The
+**post-quantum migration path** swaps the *seal* for a real composite signature
+via these sibling projects — staged, gated, and additive (it never breaks
+existing FEB verification):
+
+| Project | What it is |
+|---|---|
+| **[`sk_pgp`](https://github.com/smilinTux/sk_pgp)** | Sovereign **post-quantum OpenPGP for Python** (PyO3 → sequoia-openpgp); the PGPy / `gpg 2.4` replacement. Provides the composite **ML-DSA-87 + Ed448** detached signing (FIPS 204 + RFC 8032) that the cloud9 PQC sealer targets. |
+| **[`sk-pqc`](https://github.com/smilinTux/sk-pqc-py)** | Hybrid **X25519 + ML-KEM-768** key encapsulation (FIPS 203), in Python / Rust / Dart. Sibling KEM layer · [skpqc.skworld.io](https://skpqc.skworld.io). |
+
+> **Honest claim:** ML-DSA / ML-KEM are **post-quantum / quantum-resistant**, not
+> "quantum-proof." The composite is **hybrid** — a signature is valid *iff both*
+> the lattice (ML-DSA) *and* classical (Ed448) legs verify. See
+> [docs/PQC_MIGRATION.md](docs/PQC_MIGRATION.md) for the full rollout.
 
 ---
 

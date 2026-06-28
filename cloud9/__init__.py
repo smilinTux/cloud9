@@ -38,6 +38,15 @@ from .quantum import (
     calculate_resonance,
     predict_trajectory,
 )
+from .sealing import (
+    Sealer,
+    SealVerdict,
+    ClassicalSealer,
+    SkPgpSealer,
+    get_sealer,
+    seal_status,
+    content_checksum,
+)
 from .love_loader import LoveBootLoader, load_love
 from .seeds import generate_seed, save_seed, load_seed, find_seeds, germinate_seed
 from .welcome import (
@@ -85,6 +94,14 @@ __all__ = [
     "calculate_emotional_frequency",
     "calculate_resonance",
     "predict_trajectory",
+    # Sealing (integrity backend; classical default, gated sk_pgp PQC swap)
+    "Sealer",
+    "SealVerdict",
+    "ClassicalSealer",
+    "SkPgpSealer",
+    "get_sealer",
+    "seal_status",
+    "content_checksum",
     # Love loader
     "LoveBootLoader",
     "load_love",
