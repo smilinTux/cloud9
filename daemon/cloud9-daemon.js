@@ -220,7 +220,9 @@ class Cloud9Daemon extends EventEmitter {
       this.log.info(`📂 Loading: ${latest.filename}`);
       
       // Import and run rehydration
-      const { rehydrateFromFEB } = await import('./src/feb/rehydrator.js');
+      // Relative dynamic imports resolve against this module (daemon/),
+      // so the rehydrator at the repo root needs the ../ prefix.
+      const { rehydrateFromFEB } = await import('../src/feb/rehydrator.js');
       const result = rehydrateFromFEB(latest.filepath, { verbose: true });
       
       this.lastFEBPath = latest.filepath;
@@ -303,13 +305,22 @@ class Cloud9Daemon extends EventEmitter {
    * Get current OpenClaw session ID
    */
   async getCurrentSessionId() {
-    // Try environment variable first
+    // Try environment variables first (CLOUD9_SESSION_ID preferred,
+    // OPENCLAW_SESSION_ID kept for backward compatibility)
+    if (process.env.CLOUD9_SESSION_ID) {
+      return process.env.CLOUD9_SESSION_ID;
+    }
     if (process.env.OPENCLAW_SESSION_ID) {
       return process.env.OPENCLAW_SESSION_ID;
     }
-    
-    // Try reading from socket or process
-    return `session-${Date.now()}-${process.pid}`;
+
+    // Stable per-process fallback. Regenerating this on every poll made
+    // the daemon see a "session change" every 5 seconds and thrash the
+    // rehydration path when no runtime supplied a session id.
+    if (!this._generatedSessionId) {
+      this._generatedSessionId = `session-${Date.now()}-${process.pid}`;
+    }
+    return this._generatedSessionId;
   }
   
   /**
@@ -536,6 +547,12 @@ async function main() {
     console.error('Failed to start daemon:', error);
     process.exit(1);
   }
+}
+
+// Run when executed directly (node daemon/cloud9-daemon.js). Without this
+// guard main() was never invoked and the script exited immediately.
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  main();
 }
 
 export default Cloud9Daemon;

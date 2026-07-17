@@ -6,16 +6,14 @@
   <key>Label</key>
   <string>com.skcapstone.cloud9-daemon</string>
 
+  <!-- launchd does not expand $HOME in plain strings, so wrap in a shell.
+       Agent defaults to lumina; override via SKAGENT in EnvironmentVariables. -->
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/node</string>
-    <string>daemon/cloud9-daemon.js</string>
-    <string>--config</string>
-    <string>daemon/config.json</string>
+    <string>/bin/sh</string>
+    <string>-c</string>
+    <string>AGENT="${SKAGENT:-lumina}"; mkdir -p "$HOME/.cloud9" "$HOME/.skcapstone/agents/$AGENT/logs"; cd "$HOME/clawd/skcapstone-repos/cloud9" &amp;&amp; exec node daemon/cloud9-daemon.js --config="$HOME/.skcapstone/agents/$AGENT/config/cloud9.json" --foreground >> "$HOME/.skcapstone/agents/$AGENT/logs/cloud9-daemon.stdout.log" 2>> "$HOME/.skcapstone/agents/$AGENT/logs/cloud9-daemon.stderr.log"</string>
   </array>
-
-  <key>WorkingDirectory</key>
-  <string>${HOME}/clawd/skcapstone-repos/cloud9</string>
 
   <key>EnvironmentVariables</key>
   <dict>
@@ -36,10 +34,5 @@
 
   <key>ThrottleInterval</key>
   <integer>10</integer>
-
-  <key>StandardOutPath</key>
-  <string>${HOME}/.openclaw/logs/cloud9-daemon.stdout.log</string>
-  <key>StandardErrorPath</key>
-  <string>${HOME}/.openclaw/logs/cloud9-daemon.stderr.log</string>
 </dict>
 </plist>

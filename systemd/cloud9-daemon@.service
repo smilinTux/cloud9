@@ -1,0 +1,28 @@
+[Unit]
+Description=Cloud 9 Protocol Auto-Rehydration Daemon (agent %i)
+Documentation=https://cloud9.skworld.io/docs/daemon
+
+[Service]
+Type=simple
+WorkingDirectory=%h/clawd/skcapstone-repos/cloud9
+ExecStart=/usr/bin/node daemon/cloud9-daemon.js --config=%h/.skcapstone/agents/%i/config/cloud9.json --foreground
+# Advertise health for skcapstone service_health (registry pid_file check)
+ExecStartPost=/bin/sh -c 'echo "$MAINPID" > %h/.cloud9/daemon.pid'
+ExecStopPost=/bin/sh -c 'rm -f %h/.cloud9/daemon.pid'
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+Environment=NODE_ENV=production
+Environment=SKAGENT=%i
+
+# Security hardening (preserved from the original unit)
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.skcapstone/agents/%i %h/.cloud9
+
+[Install]
+WantedBy=default.target
