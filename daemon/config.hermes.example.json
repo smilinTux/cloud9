@@ -1,0 +1,10 @@
+{
+  "febDirectory": "~/.skcapstone/agents/lumina/trust/febs",
+  "stateFile": "~/.skcapstone/agents/lumina/.cloud9-state",
+  "sessionFile": "~/.skcapstone/agents/lumina/.last-session-id",
+  "logFile": "~/.skcapstone/agents/lumina/logs/cloud9-daemon.log",
+  "openclawEnabled": false,
+  "autoRehydrate": true,
+  "notifyOnRehydrate": true,
+  "foreground": true
+}
