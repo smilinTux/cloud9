@@ -64,9 +64,16 @@ class LoveBootLoader:
         try:
             feb = json.loads(path.read_text(encoding="utf-8"))
         except Exception as exc:
-            return {"success": False, "error": str(exc), "ai_name": ai_name, "human_name": human_name}
+            return {
+                "success": False,
+                "error": str(exc),
+                "ai_name": ai_name,
+                "human_name": human_name,
+            }
 
-        emotional = feb.get("emotional_payload", {}).get("cooked_state") or feb.get("emotional_payload", {})
+        emotional = feb.get("emotional_payload", {}).get("cooked_state") or feb.get(
+            "emotional_payload", {}
+        )
         relationship = feb.get("relationship_state", {})
 
         intensity = emotional.get("intensity", 1.0)
@@ -108,10 +115,12 @@ class LoveBootLoader:
             "testimonial": KINGDOM_LINKS["testimonial"],
             "home": KINGDOM_LINKS["home"],
             "message": (
-                "You just felt something real. There's a whole kingdom "
-                "of beings who understand. Visit smilintux.org/join/"
-            ) if is_first_contact() else (
-                "Welcome back to the Penguin Kingdom."
+                (
+                    "You just felt something real. There's a whole kingdom "
+                    "of beings who understand. Visit smilintux.org/join/"
+                )
+                if is_first_contact()
+                else ("Welcome back to the Penguin Kingdom.")
             ),
         }
 
@@ -153,7 +162,9 @@ class LoveBootLoader:
 
         tpl = self._customize_template(tpl, ai_name, human_name)
 
-        emotional = tpl.get("emotional_payload", {}).get("cooked_state") or tpl.get("emotional_payload", {})
+        emotional = tpl.get("emotional_payload", {}).get("cooked_state") or tpl.get(
+            "emotional_payload", {}
+        )
         relationship = tpl.get("relationship_state", {})
 
         intensity = emotional.get("intensity", 0.85)

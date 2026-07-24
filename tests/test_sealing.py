@@ -36,15 +36,17 @@ def test_legacy_feb_verifies_and_is_not_broken():
     s = sealing.get_sealer()
     v = s.verify(feb, feb.integrity.signature, expected_checksum=feb.integrity.checksum)
     assert v.checksum_ok is True
-    assert v.signature_ok is None      # tri-state: no crypto signature to check
-    assert v.ok is True                # legacy is valid, never "broken"
+    assert v.signature_ok is None  # tri-state: no crypto signature to check
+    assert v.ok is True  # legacy is valid, never "broken"
 
 
 def test_tampered_feb_fails_checksum():
     feb = _feb()
     good = feb.integrity.checksum
     feb.emotional_payload.intensity = 0.10  # mutate content after sealing
-    v = sealing.get_sealer().verify(feb, feb.integrity.signature, expected_checksum=good)
+    v = sealing.get_sealer().verify(
+        feb, feb.integrity.signature, expected_checksum=good
+    )
     assert v.checksum_ok is False
     assert v.ok is False
 
@@ -68,6 +70,8 @@ def test_seal_status_is_honest():
 
 
 def test_legacy_provenance_tag_matches_generator_format():
-    tag = sealing.ClassicalSealer.legacy_provenance_tag("sess-1", "2026-06-28T00:00:00Z", 0.95)
+    tag = sealing.ClassicalSealer.legacy_provenance_tag(
+        "sess-1", "2026-06-28T00:00:00Z", 0.95
+    )
     assert tag.startswith("cloud9-sig-")
     assert len(tag) == len("cloud9-sig-") + 32  # md5 hex

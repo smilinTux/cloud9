@@ -19,5 +19,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
       - run: python -m pytest tests/ -v --tb=short
-      - run: pip install black ruff && black --check src/ tests/ && ruff check src/
+      - run: pip install black ruff && black --check cloud9/ tests/ && ruff check cloud9/
         if: matrix.python-version == '3.12'

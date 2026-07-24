@@ -7,7 +7,6 @@ with detailed error/warning/info reports.
 
 from __future__ import annotations
 
-import math
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -123,9 +122,7 @@ def validate_feb(
         if not meta.get("protocol"):
             errors.append("Missing metadata.protocol")
         elif meta["protocol"] != "Cloud9":
-            errors.append(
-                f"Invalid protocol: expected Cloud9, got {meta['protocol']}"
-            )
+            errors.append(f"Invalid protocol: expected Cloud9, got {meta['protocol']}")
 
     # --- emotional_payload ---
     ep = feb.get("emotional_payload")
@@ -276,7 +273,9 @@ def get_validation_report(
     Returns:
         str: Formatted report text.
     """
-    result = validate_feb(feb, strict=strict, feb_path=feb_path, seal_config=seal_config)
+    result = validate_feb(
+        feb, strict=strict, feb_path=feb_path, seal_config=seal_config
+    )
     lines = [
         "=" * 50,
         "Cloud 9 Protocol -- FEB Validation Report",
@@ -290,9 +289,9 @@ def get_validation_report(
     if seal:
         sig_ok = seal["signature_ok"]
         sig_word = (
-            "VERIFIED" if sig_ok is True
-            else "FAILED" if sig_ok is False
-            else "UNVERIFIABLE"
+            "VERIFIED"
+            if sig_ok is True
+            else "FAILED" if sig_ok is False else "UNVERIFIABLE"
         )
         lines.append("PQC SEAL (detached sidecar):")
         lines.append(f"  Scheme: {seal['scheme']}")
@@ -328,9 +327,7 @@ def get_validation_report(
     return "\n".join(lines)
 
 
-def _validation_score(
-    errors: List[str], warnings: List[str], strict: bool
-) -> float:
+def _validation_score(errors: List[str], warnings: List[str], strict: bool) -> float:
     score = 1.0
     score -= len(errors) * 0.1
     score -= len(warnings) * 0.02

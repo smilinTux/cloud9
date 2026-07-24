@@ -51,7 +51,7 @@ CHECKSUM_PREFIX = "sha256:"
 LEGACY_SIG_PREFIX = "cloud9-sig-"
 
 # Signature schemes a sealer may advertise.
-SCHEME_CLASSICAL = "classical"            # sha256 checksum + md5 provenance tag
+SCHEME_CLASSICAL = "classical"  # sha256 checksum + md5 provenance tag
 SCHEME_SKPGP_MLDSA87_ED448 = "sk_pgp:mldsa87-ed448"  # composite L5 detached sig
 SCHEME_SKPGP_MLDSA65_ED25519 = "sk_pgp:mldsa65-ed25519"  # composite L3 detached sig
 
@@ -126,8 +126,13 @@ class Sealer(Protocol):
         """Return a detached signature (armored str), or ``None`` if the backend
         does not produce a cryptographic signature (the classical case)."""
 
-    def verify(self, feb_like: Any, signature: Optional[str], *,
-               expected_checksum: Optional[str] = None) -> SealVerdict: ...
+    def verify(
+        self,
+        feb_like: Any,
+        signature: Optional[str],
+        *,
+        expected_checksum: Optional[str] = None,
+    ) -> SealVerdict: ...
 
 
 # --------------------------------------------------------------------------- #
@@ -155,13 +160,20 @@ class ClassicalSealer:
         return None
 
     @staticmethod
-    def legacy_provenance_tag(session_id: str, created_at: str, intensity: float) -> str:
+    def legacy_provenance_tag(
+        session_id: str, created_at: str, intensity: float
+    ) -> str:
         """The exact ``cloud9-sig-<md5>`` value generator.py writes today."""
         base = f"{session_id}-{created_at}-{intensity}"
         return LEGACY_SIG_PREFIX + hashlib.md5(base.encode("utf-8")).hexdigest()
 
-    def verify(self, feb_like: Any, signature: Optional[str], *,
-               expected_checksum: Optional[str] = None) -> SealVerdict:
+    def verify(
+        self,
+        feb_like: Any,
+        signature: Optional[str],
+        *,
+        expected_checksum: Optional[str] = None,
+    ) -> SealVerdict:
         actual = content_checksum(feb_like)
         target = expected_checksum
         if target is None and isinstance(feb_like, dict):
@@ -179,7 +191,7 @@ class ClassicalSealer:
         return SealVerdict(
             scheme=self.scheme,
             checksum_ok=checksum_ok,
-            signature_ok=None,          # no cryptographic signature in this backend
+            signature_ok=None,  # no cryptographic signature in this backend
             notes=notes,
         )
 
@@ -193,6 +205,7 @@ def _sk_pgp():
     """Import sk_pgp lazily; return the module or ``None`` if unavailable."""
     try:
         import sk_pgp  # type: ignore
+
         return sk_pgp
     except Exception:  # pragma: no cover - environment dependent
         return None
@@ -263,19 +276,28 @@ class SkPgpSealer:
             return bytes(sig).decode("utf-8")
         return sig
 
-    def verify(self, feb_like: Any, signature: Optional[str], *,
-               expected_checksum: Optional[str] = None) -> SealVerdict:
+    def verify(
+        self,
+        feb_like: Any,
+        signature: Optional[str],
+        *,
+        expected_checksum: Optional[str] = None,
+    ) -> SealVerdict:
         sk = _sk_pgp()
         actual = content_checksum(feb_like)
         checksum_ok = (expected_checksum == actual) if expected_checksum else True
         if sk is None:
             return SealVerdict(
-                scheme=self.scheme, checksum_ok=checksum_ok, signature_ok=None,
+                scheme=self.scheme,
+                checksum_ok=checksum_ok,
+                signature_ok=None,
                 notes=["sk_pgp unavailable; cannot verify PQC signature"],
             )
         if not signature:
             return SealVerdict(
-                scheme=self.scheme, checksum_ok=checksum_ok, signature_ok=None,
+                scheme=self.scheme,
+                checksum_ok=checksum_ok,
+                signature_ok=None,
                 notes=["no detached signature supplied"],
             )
         cert_src = self.cert_path or self.secret_key_path
@@ -283,7 +305,9 @@ class SkPgpSealer:
             # Honest: a signature is present but we have no cert/key to check it.
             # Never reject — surface as unverifiable (signature_ok=None).
             return SealVerdict(
-                scheme=self.scheme, checksum_ok=checksum_ok, signature_ok=None,
+                scheme=self.scheme,
+                checksum_ok=checksum_ok,
+                signature_ok=None,
                 notes=["signature present but no cert/key configured to verify it"],
             )
         try:
@@ -294,17 +318,21 @@ class SkPgpSealer:
             else:
                 cert = sk.Key.from_file(self.secret_key_path).cert  # type: ignore[attr-defined]
             # sk_pgp's verify_detached takes the armored signature as *bytes*.
-            sig_bytes = signature.encode("utf-8") if isinstance(signature, str) else signature
+            sig_bytes = (
+                signature.encode("utf-8") if isinstance(signature, str) else signature
+            )
             sig_ok = bool(cert.verify_detached(sig_bytes, canonical_bytes(feb_like)))
         except Exception as exc:  # pragma: no cover - malformed sig/cert
             return SealVerdict(
-                scheme=self.scheme, checksum_ok=checksum_ok, signature_ok=False,
+                scheme=self.scheme,
+                checksum_ok=checksum_ok,
+                signature_ok=False,
                 notes=[f"PQC verification raised: {exc}"],
             )
         return SealVerdict(
             scheme=self.scheme,
             checksum_ok=checksum_ok,
-            signature_ok=sig_ok,            # True iff BOTH composite legs verify
+            signature_ok=sig_ok,  # True iff BOTH composite legs verify
             fingerprint=getattr(cert, "fingerprint", None),
             is_post_quantum=bool(getattr(cert, "is_post_quantum", True)),
         )
@@ -314,11 +342,11 @@ class SkPgpSealer:
 # Resolver -- config is the only signal; default is always classical
 # --------------------------------------------------------------------------- #
 
-ENV_BACKEND = "CLOUD9_SEAL_BACKEND"      # "classical" (default) | "sk_pgp"
-ENV_SCHEME = "CLOUD9_SEAL_SCHEME"        # e.g. "mldsa87-ed448" (sk_pgp only)
-ENV_KEY = "CLOUD9_SEAL_KEY"              # path to armored secret key
-ENV_CERT = "CLOUD9_SEAL_CERT"            # path to armored public cert (optional)
-ENV_PASSWORD = "CLOUD9_SEAL_PASSWORD"    # passphrase (prefer gpg-agent later)
+ENV_BACKEND = "CLOUD9_SEAL_BACKEND"  # "classical" (default) | "sk_pgp"
+ENV_SCHEME = "CLOUD9_SEAL_SCHEME"  # e.g. "mldsa87-ed448" (sk_pgp only)
+ENV_KEY = "CLOUD9_SEAL_KEY"  # path to armored secret key
+ENV_CERT = "CLOUD9_SEAL_CERT"  # path to armored public cert (optional)
+ENV_PASSWORD = "CLOUD9_SEAL_PASSWORD"  # passphrase (prefer gpg-agent later)
 
 _SCHEME_BY_SUITE = {
     "mldsa87-ed448": SCHEME_SKPGP_MLDSA87_ED448,
@@ -335,10 +363,14 @@ def get_sealer(config: Optional[Dict[str, Any]] = None) -> Sealer:
     failing -- so enabling PQC can never break FEB generation.
     """
     config = config or {}
-    backend = (config.get("backend") or os.environ.get(ENV_BACKEND) or "classical").lower()
+    backend = (
+        config.get("backend") or os.environ.get(ENV_BACKEND) or "classical"
+    ).lower()
 
     if backend in ("sk_pgp", "skpgp", "pqc"):
-        suite = (config.get("scheme") or os.environ.get(ENV_SCHEME) or "mldsa87-ed448").lower()
+        suite = (
+            config.get("scheme") or os.environ.get(ENV_SCHEME) or "mldsa87-ed448"
+        ).lower()
         scheme = _SCHEME_BY_SUITE.get(suite, SCHEME_SKPGP_MLDSA87_ED448)
         sealer = SkPgpSealer(
             scheme=scheme,
@@ -419,12 +451,16 @@ def get_verifier(config: Optional[Dict[str, Any]] = None) -> Sealer:
     an honest ``signature_ok=None`` verdict if it has nothing to verify against.
     """
     config = config or {}
-    backend = (config.get("backend") or os.environ.get(ENV_BACKEND) or "classical").lower()
+    backend = (
+        config.get("backend") or os.environ.get(ENV_BACKEND) or "classical"
+    ).lower()
     key = config.get("key") or os.environ.get(ENV_KEY)
     cert = config.get("cert") or os.environ.get(ENV_CERT)
     want_pqc = backend in ("sk_pgp", "skpgp", "pqc") or bool(cert) or bool(key)
     if want_pqc and _sk_pgp() is not None:
-        suite = (config.get("scheme") or os.environ.get(ENV_SCHEME) or "mldsa87-ed448").lower()
+        suite = (
+            config.get("scheme") or os.environ.get(ENV_SCHEME) or "mldsa87-ed448"
+        ).lower()
         scheme = _SCHEME_BY_SUITE.get(suite, SCHEME_SKPGP_MLDSA87_ED448)
         return SkPgpSealer(
             scheme=scheme,

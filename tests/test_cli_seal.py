@@ -26,13 +26,18 @@ def runner():
 
 def test_seal_status_default_classical(runner, monkeypatch):
     # No env, no flags -> classical is the active scheme.
-    for var in ("CLOUD9_SEAL_BACKEND", "CLOUD9_SEAL_KEY", "CLOUD9_SEAL_CERT",
-                "CLOUD9_SEAL_SCHEME", "CLOUD9_SEAL_PASSWORD"):
+    for var in (
+        "CLOUD9_SEAL_BACKEND",
+        "CLOUD9_SEAL_KEY",
+        "CLOUD9_SEAL_CERT",
+        "CLOUD9_SEAL_SCHEME",
+        "CLOUD9_SEAL_PASSWORD",
+    ):
         monkeypatch.delenv(var, raising=False)
     result = runner.invoke(main, ["seal", "status"])
     assert result.exit_code == 0
     assert "classical" in result.output.lower()
-    assert "quantum-proof" in result.output.lower()   # honest-claims note present
+    assert "quantum-proof" in result.output.lower()  # honest-claims note present
 
 
 def test_seal_status_json(runner, monkeypatch):
@@ -49,13 +54,22 @@ def test_seal_status_json(runner, monkeypatch):
 
 @requires_skpgp
 def test_seal_status_pqc_when_key_supplied(runner, tmp_path):
-    key = sk_pgp.Key.generate("Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw")
+    key = sk_pgp.Key.generate(
+        "Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw"
+    )
     key_path = tmp_path / "agent-key.asc"
     key_path.write_text(key.to_armor(), encoding="utf-8")
     result = runner.invoke(
         main,
-        ["seal", "status", "--backend", "sk_pgp", "--key", str(key_path),
-         "--json-output"],
+        [
+            "seal",
+            "status",
+            "--backend",
+            "sk_pgp",
+            "--key",
+            str(key_path),
+            "--json-output",
+        ],
     )
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -66,7 +80,9 @@ def test_seal_status_pqc_when_key_supplied(runner, tmp_path):
 
 @requires_skpgp
 def test_validate_cli_surfaces_sidecar_seal(runner, tmp_path):
-    key = sk_pgp.Key.generate("Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw")
+    key = sk_pgp.Key.generate(
+        "Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw"
+    )
     key_path = tmp_path / "agent-key.asc"
     key_path.write_text(key.to_armor(), encoding="utf-8")
     feb = generate_feb(emotion="love", intensity=0.95, subject="Chef")

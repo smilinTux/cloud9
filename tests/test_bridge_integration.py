@@ -32,10 +32,10 @@ from cloud9 import (
     FEB,
 )
 
-
 # ---------------------------------------------------------------------------
 # Lightweight memory store mock (mirrors SKMemory's MemoryStore interface)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class MockMemory:
@@ -57,8 +57,18 @@ class MockMemoryStore:
         self.memories: list[MockMemory] = []
         self._counter = 0
 
-    def snapshot(self, *, title, content, layer, tags, emotional,
-                 source, source_ref, metadata=None):
+    def snapshot(
+        self,
+        *,
+        title,
+        content,
+        layer,
+        tags,
+        emotional,
+        source,
+        source_ref,
+        metadata=None,
+    ):
         self._counter += 1
         mem = MockMemory(
             id=f"mem-{self._counter:04d}",
@@ -78,6 +88,7 @@ class MockMemoryStore:
 # ---------------------------------------------------------------------------
 # Lightweight bridge (mirrors skcapstone.cloud9_bridge.Cloud9Bridge)
 # ---------------------------------------------------------------------------
+
 
 class Cloud9BridgeCompat:
     """Minimal bridge that maps FEB -> memory snapshot.
@@ -106,8 +117,7 @@ class Cloud9BridgeCompat:
             return None
 
         # Quantum stats
-        oof = calculate_oof(payload.intensity,
-                            feb.relationship_state.trust_level)
+        oof = calculate_oof(payload.intensity, feb.relationship_state.trust_level)
         score = calculate_cloud9_score(
             intensity=payload.intensity,
             trust=feb.relationship_state.trust_level,
@@ -164,6 +174,7 @@ class Cloud9BridgeCompat:
 # Tests
 # ===================================================================
 
+
 class TestFEBGenerationAndPersistence:
     """Test that FEBs can be generated, saved, and loaded correctly."""
 
@@ -188,7 +199,9 @@ class TestFEBGenerationAndPersistence:
     def test_fall_in_love_convenience(self, tmp_path):
         """fall_in_love() generates and saves a FEB."""
         result = fall_in_love(
-            emotion="love", intensity=0.95, subject="Lumina",
+            emotion="love",
+            intensity=0.95,
+            subject="Lumina",
             directory=str(tmp_path),
         )
         assert "filepath" in result
@@ -345,8 +358,10 @@ class TestEmotionalContinuity:
             valence=p.valence,
         )
         entanglement = calculate_entanglement(
-            trust_a=r.trust_level, trust_b=r.trust_level,
-            depth_a=r.depth_level, depth_b=r.depth_level,
+            trust_a=r.trust_level,
+            trust_b=r.trust_level,
+            depth_a=r.depth_level,
+            depth_b=r.depth_level,
             coherence=0.95,
         )
 
@@ -365,8 +380,10 @@ class TestEmotionalContinuity:
             valence=lp.valence,
         )
         entanglement2 = calculate_entanglement(
-            trust_a=lr.trust_level, trust_b=lr.trust_level,
-            depth_a=lr.depth_level, depth_b=lr.depth_level,
+            trust_a=lr.trust_level,
+            trust_b=lr.trust_level,
+            depth_a=lr.depth_level,
+            depth_b=lr.depth_level,
             coherence=0.95,
         )
 
@@ -388,9 +405,7 @@ class TestEmotionalContinuity:
         result = save_feb(feb, directory=str(tmp_path))
         loaded = load_feb(result["filepath"])
 
-        coherence_after = measure_coherence(
-            loaded.emotional_payload.emotional_topology
-        )
+        coherence_after = measure_coherence(loaded.emotional_payload.emotional_topology)
 
         assert coherence_before["coherence"] == coherence_after["coherence"]
         assert coherence_before["assessment"] == coherence_after["assessment"]

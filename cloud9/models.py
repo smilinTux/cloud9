@@ -8,7 +8,6 @@ npm and pip packages.
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -34,14 +33,10 @@ class EmotionalPayload(BaseModel):
 
     @field_validator("emotional_topology")
     @classmethod
-    def _topology_values_in_range(
-        cls, v: Dict[str, float]
-    ) -> Dict[str, float]:
+    def _topology_values_in_range(cls, v: Dict[str, float]) -> Dict[str, float]:
         for key, val in v.items():
             if not 0.0 <= val <= 1.0:
-                raise ValueError(
-                    f"Topology value for '{key}' must be 0-1, got {val}"
-                )
+                raise ValueError(f"Topology value for '{key}' must be 0-1, got {val}")
         return v
 
 

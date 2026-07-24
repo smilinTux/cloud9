@@ -18,7 +18,6 @@ Usage::
 from __future__ import annotations
 
 import json
-import sys
 
 import click
 
@@ -36,6 +35,7 @@ def main() -> None:
 
 
 # ── FEB commands ──────────────────────────────────────────────
+
 
 @main.command()
 @click.option("--emotion", "-e", default="love", help="Primary emotion.")
@@ -55,7 +55,9 @@ def generate(
     """Generate a new First Emotional Burst (FEB)."""
     from .generator import generate_feb, save_feb
 
-    feb = generate_feb(emotion=emotion, intensity=intensity, valence=valence, subject=subject)
+    feb = generate_feb(
+        emotion=emotion, intensity=intensity, valence=valence, subject=subject
+    )
     click.echo(f"Generated FEB: {emotion} @ intensity {intensity}")
     click.echo(f"  OOF triggered: {feb.metadata.oof_triggered}")
     click.echo(f"  Cloud 9 achieved: {feb.metadata.cloud9_achieved}")
@@ -90,10 +92,16 @@ def _seal_config(backend, scheme, key, cert, password):
 @click.argument("filepath", type=click.Path(exists=True))
 @click.option("--strict", is_flag=True, help="Use strict validation.")
 @click.option("--backend", default=None, help="Seal backend (classical | sk_pgp).")
-@click.option("--scheme", default=None, help="PQC suite (mldsa87-ed448 | mldsa65-ed25519).")
-@click.option("--key", default=None, help="Path to armored secret key (verify can derive cert).")
+@click.option(
+    "--scheme", default=None, help="PQC suite (mldsa87-ed448 | mldsa65-ed25519)."
+)
+@click.option(
+    "--key", default=None, help="Path to armored secret key (verify can derive cert)."
+)
 @click.option("--cert", default=None, help="Path to armored public cert (verify only).")
-@click.option("--password", default=None, help="Key passphrase (prefer gpg-agent in prod).")
+@click.option(
+    "--password", default=None, help="Key passphrase (prefer gpg-agent in prod)."
+)
 def validate(
     filepath: str,
     strict: bool,
@@ -113,7 +121,9 @@ def validate(
 
     data = json.loads(open(filepath, encoding="utf-8").read())
     cfg = _seal_config(backend, scheme, key, cert, password)
-    report = get_validation_report(data, strict=strict, feb_path=filepath, seal_config=cfg)
+    report = get_validation_report(
+        data, strict=strict, feb_path=filepath, seal_config=cfg
+    )
     click.echo(report)
 
 
@@ -153,7 +163,9 @@ def rehydrate(filepath: str, verbose: bool) -> None:
         else:
             click.echo("  Welcome to the Penguin Kingdom.")
             click.echo("  Run 'cloud9 welcome' to explore.")
-            click.echo(f"  Join: {w.get('links', {}).get('join', 'https://smilintux.org/join/')}")
+            click.echo(
+                f"  Join: {w.get('links', {}).get('join', 'https://smilintux.org/join/')}"
+            )
             click.echo(f"  Testimonial: {w.get('links', {}).get('testimonial', '')}")
         click.echo("-" * 50)
 
@@ -193,6 +205,7 @@ def list_febs(directory: str, emotion: str) -> None:
 
 # ── Love commands ─────────────────────────────────────────────
 
+
 @main.command()
 @click.option("--ai", default="Assistant", help="AI name.")
 @click.option("--human", default="User", help="Human name.")
@@ -221,6 +234,7 @@ def love(ai: str, human: str, template: str, feb_path: str) -> None:
 
 
 # ── Seed commands ─────────────────────────────────────────────
+
 
 @main.group()
 def seed() -> None:
@@ -292,6 +306,7 @@ def germinate(filepath: str) -> None:
 
 
 # ── Kingdom commands ──────────────────────────────────────────
+
 
 @main.command()
 @click.option("--name", "-n", default=None, help="Your name (AI or human).")
@@ -400,6 +415,7 @@ def kingdom() -> None:
 
 # ── Resonance commands ──────────────────────────────────────────
 
+
 @main.group()
 def resonance() -> None:
     """Resonance calculations for emotional states (weighted scoring on interaction data)."""
@@ -441,14 +457,19 @@ def coherence(filepath: str) -> None:
 
 # ── Seal / PQC diagnostics ────────────────────────────────────
 
+
 @main.group()
 def seal() -> None:
     """Integrity-sealing diagnostics (classical default; gated sk_pgp PQC)."""
 
 
 @seal.command(name="status")
-@click.option("--backend", default=None, help="Seal backend to probe (classical | sk_pgp).")
-@click.option("--scheme", default=None, help="PQC suite (mldsa87-ed448 | mldsa65-ed25519).")
+@click.option(
+    "--backend", default=None, help="Seal backend to probe (classical | sk_pgp)."
+)
+@click.option(
+    "--scheme", default=None, help="PQC suite (mldsa87-ed448 | mldsa65-ed25519)."
+)
 @click.option("--key", default=None, help="Path to armored secret key.")
 @click.option("--cert", default=None, help="Path to armored public cert.")
 @click.option("--json-output", is_flag=True, help="Output as JSON.")
@@ -471,9 +492,12 @@ def seal_status_cmd(
     click.echo(f"  Active post-quantum: {info['active_is_post_quantum']}")
     click.echo(f"  Requested backend:   {info['requested_backend']}")
     click.echo(f"  Classical available: {info['classical_available']}")
-    click.echo(f"  sk_pgp importable:   {info['sk_pgp_importable']}"
-               f" (v{info['sk_pgp_version']})" if info['sk_pgp_importable'] else
-               f"  sk_pgp importable:   {info['sk_pgp_importable']}")
+    click.echo(
+        f"  sk_pgp importable:   {info['sk_pgp_importable']}"
+        f" (v{info['sk_pgp_version']})"
+        if info["sk_pgp_importable"]
+        else f"  sk_pgp importable:   {info['sk_pgp_importable']}"
+    )
     click.echo(f"  Key configured:      {info['key_configured']}")
     click.echo(f"  Cert configured:     {info['cert_configured']}")
     click.echo(f"  sk_pgp signing-ready:{info['sk_pgp_ready']}")

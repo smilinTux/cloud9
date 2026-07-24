@@ -10,12 +10,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
-
 
 SEED_VERSION = "1.0.0"
 _SEEDS_DIR_NAME = "seeds"
@@ -69,7 +67,9 @@ def generate_seed(
     emotional_state = emotional_state or {}
 
     now = datetime.now(timezone.utc).isoformat()
-    seed_id = f"seed-{uuid4().hex[:8]}-{int(datetime.now(timezone.utc).timestamp() * 1000)}"
+    seed_id = (
+        f"seed-{uuid4().hex[:8]}-{int(datetime.now(timezone.utc).timestamp() * 1000)}"
+    )
 
     seed: Dict[str, Any] = {
         "seed_metadata": {
@@ -105,7 +105,9 @@ def generate_seed(
     }
 
     payload = json.dumps({**seed, "integrity": {"checksum": "pending"}}, sort_keys=True)
-    seed["integrity"]["checksum"] = f"sha256:{hashlib.sha256(payload.encode()).hexdigest()}"
+    seed["integrity"][
+        "checksum"
+    ] = f"sha256:{hashlib.sha256(payload.encode()).hexdigest()}"
 
     return seed
 
@@ -197,8 +199,7 @@ def find_seeds(
 
     if ai_name:
         results = [
-            s for s in results
-            if (s.get("ai_name") or "").lower() == ai_name.lower()
+            s for s in results if (s.get("ai_name") or "").lower() == ai_name.lower()
         ]
 
     reverse = sort != "oldest"
