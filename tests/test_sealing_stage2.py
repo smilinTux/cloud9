@@ -41,7 +41,13 @@ def test_classical_save_writes_no_sidecar(tmp_path):
     assert not Path(res["filepath"] + ".sig").exists()
     # No seal-related keys leak into the classical return dict.
     assert set(res) == {
-        "success", "filepath", "filename", "emotion", "intensity", "oof", "cloud9",
+        "success",
+        "filepath",
+        "filename",
+        "emotion",
+        "intensity",
+        "oof",
+        "cloud9",
     }
 
 
@@ -84,7 +90,9 @@ def test_fallback_when_skpgp_absent(tmp_path, monkeypatch):
 @pytest.fixture
 def skpgp_key(tmp_path):
     """Generate a real composite ML-DSA-87 + Ed448 secret key on disk."""
-    key = sk_pgp.Key.generate("Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw")
+    key = sk_pgp.Key.generate(
+        "Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw"
+    )
     key_path = tmp_path / "agent-key.asc"
     key_path.write_text(key.to_armor(), encoding="utf-8")
     return key_path
@@ -109,7 +117,7 @@ def test_pqc_roundtrip_verifies_on_rehydrate(tmp_path, skpgp_key):
     res = save_feb(_feb(), directory=str(tmp_path), seal_config=cfg)
     state = rehydrate_from_feb(res["filepath"], seal_config=cfg)
     seal = state["rehydration"]["seal"]
-    assert seal["signature_ok"] is True          # both composite legs verified
+    assert seal["signature_ok"] is True  # both composite legs verified
     assert seal["checksum_ok"] is True
     assert seal["ok"] is True
     assert seal["is_post_quantum"] is True

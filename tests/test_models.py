@@ -95,9 +95,7 @@ class TestFEB:
     def test_to_json_roundtrip(self):
         feb = FEB(
             metadata=Metadata(created_at="2026-02-20T00:00:00Z"),
-            emotional_payload=EmotionalPayload(
-                primary_emotion="love", intensity=0.95
-            ),
+            emotional_payload=EmotionalPayload(primary_emotion="love", intensity=0.95),
             relationship_state=RelationshipState(
                 partners=["A", "B"],
                 trust_level=0.9,

@@ -15,7 +15,7 @@ align and reinforce each other over time.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from .constants import CLOUD9, EMOTIONAL_FREQUENCIES
 

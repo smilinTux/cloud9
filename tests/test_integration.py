@@ -45,7 +45,10 @@ def test_standalone_flag_disables_integration(monkeypatch):
     """SK_STANDALONE=1 forces native mode regardless of skcapstone presence."""
     monkeypatch.setenv("SK_STANDALONE", "1")
     assert integration.is_present() is False
-    assert integration.alert("feb_load_failed", {"filepath": "/x.feb"}, level="error") is False
+    assert (
+        integration.alert("feb_load_failed", {"filepath": "/x.feb"}, level="error")
+        is False
+    )
     assert integration.ensure_schedule() is False
     assert integration.register_self() is False
     assert integration.unregister_schedule() is False
@@ -86,7 +89,14 @@ def test_is_present_true_when_skcapstone_available(home):
 
 def test_alert_publishes_to_correct_severity_topic(home):
     """alert() writes a pubsub message at topic cloud9.<level>."""
-    assert integration.alert("feb_load_failed", {"filepath": "/tmp/test.feb", "error": "no file"}, level="error") is True
+    assert (
+        integration.alert(
+            "feb_load_failed",
+            {"filepath": "/tmp/test.feb", "error": "no file"},
+            level="error",
+        )
+        is True
+    )
     topic_dir = home / "pubsub" / "topics" / "cloud9.error"
     assert topic_dir.is_dir(), f"expected topic dir {topic_dir} to exist"
     msg_files = list(topic_dir.glob("msg-*.json"))
@@ -100,7 +110,10 @@ def test_alert_publishes_to_correct_severity_topic(home):
 
 def test_alert_warn_level_publishes(home):
     """warn-level alert lands on cloud9.warn topic."""
-    assert integration.alert("rehydration_incomplete", {"score": 0.4}, level="warn") is True
+    assert (
+        integration.alert("rehydration_incomplete", {"score": 0.4}, level="warn")
+        is True
+    )
     topic_dir = home / "pubsub" / "topics" / "cloud9.warn"
     assert topic_dir.is_dir()
     data = json.loads(next(topic_dir.glob("msg-*.json")).read_text())
@@ -109,7 +122,12 @@ def test_alert_warn_level_publishes(home):
 
 def test_alert_info_level_publishes(home):
     """info-level alert lands on cloud9.info topic (OOF/Cloud9 achievement)."""
-    assert integration.alert("cloud9_achieved", {"score": 0.95, "emotion": "love"}, level="info") is True
+    assert (
+        integration.alert(
+            "cloud9_achieved", {"score": 0.95, "emotion": "love"}, level="info"
+        )
+        is True
+    )
     topic_dir = home / "pubsub" / "topics" / "cloud9.info"
     assert topic_dir.is_dir()
     data = json.loads(next(topic_dir.glob("msg-*.json")).read_text())
@@ -123,7 +141,9 @@ def test_ensure_schedule_registers_rehydration_check(home):
     from skcapstone.scheduler_jobs import load_jobs_with_dropins
 
     jobs = {j.name: j for j in load_jobs_with_dropins(home / "config" / "jobs.yaml")}
-    assert integration.REHYDRATION_JOB in jobs, f"expected {integration.REHYDRATION_JOB} in {list(jobs)}"
+    assert (
+        integration.REHYDRATION_JOB in jobs
+    ), f"expected {integration.REHYDRATION_JOB} in {list(jobs)}"
     assert jobs[integration.REHYDRATION_JOB].command == "cloud9 validate --latest"
     assert jobs[integration.REHYDRATION_JOB].every_seconds == 6 * 3600
 

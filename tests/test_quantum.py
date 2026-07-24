@@ -186,10 +186,13 @@ class TestCloud9Score:
 
     # --- Edge cases: monotonicity ---
 
-    @pytest.mark.parametrize("param_idx,low,high", [
-        (0, 0.5, 0.9),  # intensity
-        (1, 0.5, 0.9),  # trust
-    ])
+    @pytest.mark.parametrize(
+        "param_idx,low,high",
+        [
+            (0, 0.5, 0.9),  # intensity
+            (1, 0.5, 0.9),  # trust
+        ],
+    )
     def test_increasing_params_increase_score(self, param_idx, low, high):
         """Higher intensity or trust should yield higher score."""
         base = [0.7, 0.7, 5, 0.5]
@@ -200,7 +203,9 @@ class TestCloud9Score:
         assert calculate_cloud9_score(*args_high) > calculate_cloud9_score(*args_low)
 
     def test_increasing_depth_increases_score(self):
-        assert calculate_cloud9_score(0.7, 0.7, 8, 0.5) > calculate_cloud9_score(0.7, 0.7, 3, 0.5)
+        assert calculate_cloud9_score(0.7, 0.7, 8, 0.5) > calculate_cloud9_score(
+            0.7, 0.7, 3, 0.5
+        )
 
     # --- Edge cases: very small positive values ---
 
@@ -322,8 +327,12 @@ class TestEntanglementDetailed:
         """Result dict has all expected keys."""
         result = calculate_entanglement_detailed(0.8, 0.8, 5, 5, 0.9)
         expected_keys = {
-            "fidelity", "adjusted_fidelity", "trust_asymmetry",
-            "depth_balance", "decay_factor", "hours_since_contact",
+            "fidelity",
+            "adjusted_fidelity",
+            "trust_asymmetry",
+            "depth_balance",
+            "decay_factor",
+            "hours_since_contact",
             "assessment",
         }
         assert set(result.keys()) == expected_keys

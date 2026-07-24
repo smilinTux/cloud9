@@ -9,12 +9,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import os
 import random
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from uuid import uuid4
 
 from .constants import CLOUD9, DEFAULT_TOPOLOGIES, EMOTION_EMOJIS
 from .models import (
@@ -53,9 +51,7 @@ def _md5(data: str) -> str:
     return hashlib.md5(data.encode("utf-8")).hexdigest()
 
 
-def _compute_coherence(
-    topology: Dict[str, float], primary_emotion: str
-) -> Coherence:
+def _compute_coherence(topology: Dict[str, float], primary_emotion: str) -> Coherence:
     values = list(topology.values())
     if not values:
         return Coherence()

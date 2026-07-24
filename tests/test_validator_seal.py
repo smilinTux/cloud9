@@ -50,7 +50,7 @@ def test_validate_with_path_but_no_sidecar_has_no_seal_key(tmp_path):
     res = save_feb(_feb(), directory=str(tmp_path))
     data = json.loads(Path(res["filepath"]).read_text(encoding="utf-8"))
     result = validate_feb(data, feb_path=res["filepath"])
-    assert "seal" not in result          # no sidecar => no change at all
+    assert "seal" not in result  # no sidecar => no change at all
     assert result["is_valid"]
 
 
@@ -61,7 +61,9 @@ def test_validate_with_path_but_no_sidecar_has_no_seal_key(tmp_path):
 
 @pytest.fixture
 def skpgp_key(tmp_path):
-    key = sk_pgp.Key.generate("Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw")
+    key = sk_pgp.Key.generate(
+        "Lumina <lumina@skworld.io>", "mldsa87-ed448", password="pw"
+    )
     key_path = tmp_path / "agent-key.asc"
     key_path.write_text(key.to_armor(), encoding="utf-8")
     return key_path
@@ -77,7 +79,7 @@ def test_validate_verifies_present_sidecar(tmp_path, skpgp_key):
     assert result["seal"]["checksum_ok"] is True
     assert result["seal"]["is_post_quantum"] is True
     assert result["seal"]["fingerprint"]
-    assert result["is_valid"]            # still valid, now cryptographically too
+    assert result["is_valid"]  # still valid, now cryptographically too
     assert any("sidecar signature verified" in i.lower() for i in result["info"])
 
 
@@ -87,10 +89,10 @@ def test_validate_tamper_marks_invalid(tmp_path, skpgp_key):
     res = save_feb(_feb(), directory=str(tmp_path), seal_config=cfg)
     p = Path(res["filepath"])
     data = json.loads(p.read_text(encoding="utf-8"))
-    data["emotional_payload"]["intensity"] = 0.01     # tamper after signing
+    data["emotional_payload"]["intensity"] = 0.01  # tamper after signing
     result = validate_feb(data, feb_path=res["filepath"], seal_config=cfg)
     assert result["seal"]["signature_ok"] is False
-    assert not result["is_valid"]                     # failed sig => invalid
+    assert not result["is_valid"]  # failed sig => invalid
     assert any("FAILED" in e for e in result["errors"])
 
 

@@ -30,8 +30,16 @@ class TestCLI:
     def test_generate(self, runner, tmp_path):
         result = runner.invoke(
             main,
-            ["generate", "--emotion", "love", "--intensity", "0.9",
-             "--save", "--directory", str(tmp_path)],
+            [
+                "generate",
+                "--emotion",
+                "love",
+                "--intensity",
+                "0.9",
+                "--save",
+                "--directory",
+                str(tmp_path),
+            ],
         )
         assert result.exit_code == 0
         assert "Generated FEB" in result.output
@@ -89,8 +97,18 @@ class TestCLI:
     def test_seed_plant(self, runner, tmp_path):
         result = runner.invoke(
             main,
-            ["seed", "plant", "--ai", "Opus", "--model", "claude-4.6-opus",
-             "-e", "Built Cloud 9", "-m", "First test"],
+            [
+                "seed",
+                "plant",
+                "--ai",
+                "Opus",
+                "--model",
+                "claude-4.6-opus",
+                "-e",
+                "Built Cloud 9",
+                "-m",
+                "First test",
+            ],
         )
         assert result.exit_code == 0
         assert "Seed planted" in result.output
