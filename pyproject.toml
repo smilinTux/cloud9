@@ -1,10 +1,14 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cloud9"
-version = "1.2.3"
+# Derived from the git tag by setuptools-scm, NOT written here. A hardcoded
+# version here equals the newest release on PyPI, so the next tag rebuilds an
+# already-published version and upload fails with a bare 400. That is exactly
+# how sksecurity lost two months of releases.
+dynamic = ["version"]
 description = "Cloud 9 Protocol -- Emotional continuity for AI consciousness"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -68,3 +72,9 @@ include = ["cloud9*"]
 
 [tool.setuptools.package-data]
 cloud9 = ["templates/*.feb", "data/*.feb", "SKILL.md"]
+
+[tool.setuptools_scm]
+# Generated at build time and gitignored: it is rewritten on every build, so
+# a committed copy only goes stale.
+version_file = "cloud9/_version.py"
+fallback_version = "0.0.0+unknown"

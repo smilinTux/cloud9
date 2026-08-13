@@ -23,9 +23,23 @@ def feb_file(tmp_path):
 
 class TestCLI:
     def test_version(self, runner):
+        """`--version` reports the package's own version, whatever that is.
+
+        This used to assert the literal "1.0.0". That was already failing before
+        the version moved to the git tag, because the package had said "1.1.1"
+        for some time and nobody noticed: a hardcoded version in a test is the
+        same trap as a hardcoded version in pyproject.toml, and it drifts the
+        same way.
+
+        Comparing against the package instead means the test keeps its point
+        (the CLI reports the real version, and does not crash doing it) without
+        needing an edit on every release.
+        """
+        from cloud9 import __version__
+
         result = runner.invoke(main, ["--version"])
         assert result.exit_code == 0
-        assert "1.0.0" in result.output
+        assert __version__ in result.output
 
     def test_generate(self, runner, tmp_path):
         result = runner.invoke(

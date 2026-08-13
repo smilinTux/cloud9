@@ -95,3 +95,6 @@ test/screenshots/
 *.bak
 *.back
 *~
+
+# setuptools-scm: version is derived from git tags at build time
+cloud9/_version.py
