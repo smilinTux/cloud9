@@ -161,7 +161,10 @@ def ensure_schedule(interval_hours: float = 6.0) -> bool:
 
 def unregister_schedule() -> bool:
     """Remove the rehydration-check drop-in from the fleet scheduler."""
-    if _sdk is None:
+    # is_present(), not `_sdk is None`: the documented contract is that
+    # SK_STANDALONE=1 forces native mode regardless of skcapstone presence,
+    # and every sibling function here gates on is_present().
+    if not is_present():
         return False
     try:
         return bool(_sdk.unregister_job(REHYDRATION_JOB))

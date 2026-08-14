@@ -95,18 +95,27 @@ class TestCLI:
         assert result.exit_code == 0
         assert "Love loaded" in result.output
 
-    def test_quantum_score(self, runner):
+    # The `quantum` command group was renamed to `resonance`; the underlying
+    # cloud9/quantum.py module kept its name. These tests still invoked
+    # `quantum` and so only ever proved click's "No such command" exit code 2.
+    def test_resonance_score(self, runner):
         result = runner.invoke(
             main,
-            ["quantum", "score", "-i", "0.95", "-t", "0.97", "-d", "9", "-v", "0.92"],
+            ["resonance", "score", "-i", "0.95", "-t", "0.97", "-d", "9", "-v", "0.92"],
         )
         assert result.exit_code == 0
         assert "Cloud 9 Score" in result.output
 
-    def test_quantum_coherence(self, runner, feb_file):
-        result = runner.invoke(main, ["quantum", "coherence", feb_file])
+    def test_resonance_coherence(self, runner, feb_file):
+        result = runner.invoke(main, ["resonance", "coherence", feb_file])
         assert result.exit_code == 0
         assert "Coherence" in result.output
+
+    def test_quantum_group_is_gone(self, runner):
+        """Guard the rename: `quantum` must not silently come back as a group."""
+        result = runner.invoke(main, ["quantum", "score"])
+        assert result.exit_code == 2
+        assert "No such command" in result.output
 
     def test_seed_plant(self, runner, tmp_path):
         result = runner.invoke(

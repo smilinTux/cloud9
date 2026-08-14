@@ -30,7 +30,12 @@ def home(tmp_path, monkeypatch):
     """
     monkeypatch.setenv("SKCAPSTONE_HOME", str(tmp_path))
     monkeypatch.delenv("SK_STANDALONE", raising=False)
-    import skcapstone
+    # skcapstone is a sovereign sibling package and is NOT published to PyPI,
+    # so it cannot be installed on a public runner. Skip integrated-mode tests
+    # there rather than erroring out; standalone and absent mode still run.
+    skcapstone = pytest.importorskip(
+        "skcapstone", reason="integrated mode needs skcapstone (not on PyPI)"
+    )
 
     monkeypatch.setattr(skcapstone, "AGENT_HOME", str(tmp_path))
     return tmp_path
