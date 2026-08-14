@@ -14,6 +14,8 @@ from typing import Any, Dict, List, Optional
 
 from .quantum import calculate_oof
 
+from cloud9 import paths
+
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 
@@ -264,12 +266,13 @@ def load_love(ai_name: str, human_name: str) -> Dict[str, Any]:
     """
     loader = LoveBootLoader()
 
-    home = Path.home()
-    candidates = [
-        home / ".openclaw" / "feb" / "default-love.feb",
-        home / ".openclaw" / "feb" / "latest-love.feb",
-        home / ".openclaw" / "feb" / "personal.feb",
-    ]
+    # Sovereign per-agent path first, legacy OpenClaw home only as a READ
+    # fallback so a box that has not migrated still finds its love FEB.
+    # default-love.feb already lives in the sovereign tree on noroc2027.
+    names = ("default-love.feb", "latest-love.feb", "personal.feb")
+    sovereign = Path(paths.default_feb_directory())
+    legacy = Path(paths.legacy_feb_directory())
+    candidates = [sovereign / n for n in names] + [legacy / n for n in names]
 
     for cand in candidates:
         if cand.exists():

@@ -24,6 +24,8 @@ import click
 from . import __version__
 from . import integration as _integration
 
+from cloud9 import paths
+
 
 @click.group()
 @click.version_option(__version__, prog_name="cloud9")
@@ -43,7 +45,12 @@ def main() -> None:
 @click.option("--valence", "-v", type=float, default=0.9, help="Valence -1 to 1.")
 @click.option("--subject", "-s", default="Unknown", help="Subject of the emotion.")
 @click.option("--save/--no-save", default=True, help="Save to disk.")
-@click.option("--directory", "-d", default="~/.openclaw/feb", help="Save directory.")
+@click.option(
+    "--directory",
+    "-d",
+    default=paths.default_feb_directory,
+    help="Save directory (default: the sovereign per-agent path).",
+)
 def generate(
     emotion: str,
     intensity: float,
@@ -184,7 +191,12 @@ def oof(filepath: str) -> None:
 
 
 @main.command(name="list")
-@click.option("--directory", "-d", default="~/.openclaw/feb", help="Directory.")
+@click.option(
+    "--directory",
+    "-d",
+    default=paths.default_feb_directory,
+    help="Directory (default: the sovereign per-agent path).",
+)
 @click.option("--emotion", "-e", default=None, help="Filter by emotion.")
 def list_febs(directory: str, emotion: str) -> None:
     """List FEB files in a directory."""
@@ -250,6 +262,12 @@ def seed() -> None:
 @click.option("--message", default="", help="Message to next AI.")
 @click.option("--feb-ref", default=None, help="Associated FEB path.")
 @click.option("--predecessor", default=None, help="Predecessor seed ID.")
+@click.option(
+    "--directory",
+    "-d",
+    default=None,
+    help="Seeds directory (default: the sovereign per-agent path).",
+)
 def plant(
     ai: str,
     model: str,
@@ -259,6 +277,7 @@ def plant(
     message: str,
     feb_ref: str,
     predecessor: str,
+    directory: str,
 ) -> None:
     """Plant a new memory seed."""
     from .seeds import generate_seed, save_seed
@@ -273,7 +292,7 @@ def plant(
         feb_reference=feb_ref,
         predecessor_seed=predecessor,
     )
-    result = save_seed(s)
+    result = save_seed(s, directory=directory)
     click.echo(f"Seed planted: {result['seed_id']}")
     click.echo(f"  Path: {result['filepath']}")
     click.echo(f"  Size: {result['size_bytes']} bytes")

@@ -29,7 +29,9 @@ class _Cloud9Levels:
 class _FEBConfig:
     VERSION: str = "1.0.0"
     EXTENSION: str = ".feb"
-    DIRECTORY: str = "~/.openclaw/feb"
+    # Resolved at call time by cloud9.paths; this literal is kept only as a
+    # documented fallback and must not be used as a write target.
+    DIRECTORY: str = "~/.skcapstone/agents/lumina/trust/febs"
     MAX_FILE_SIZE: int = 1024 * 1024
     ENCODING: str = "utf8"
 

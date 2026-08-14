@@ -31,7 +31,10 @@ export const CLOUD9_CONSTANTS = {
   FEB: {
     VERSION: '1.0.0',
     EXTENSION: '.feb',
-    DIRECTORY: '~/.openclaw/feb',
+    // Sovereign per-agent path, never the evicted OpenClaw home.
+    // CLOUD9_FEB_DIR overrides; SKAGENT selects the agent.
+    DIRECTORY: process.env.CLOUD9_FEB_DIR
+      || `~/.skcapstone/agents/${process.env.SKAGENT || process.env.SKCAPSTONE_AGENT || 'lumina'}/trust/febs`,
     NAMING_PATTERN: 'FEB_YYYY-MM-DD_HH-MM-SS_emotion.feb',
     MAX_FILE_SIZE: 1024 * 1024, // 1MB
     ENCODING: 'utf8'
