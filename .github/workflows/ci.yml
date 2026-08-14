@@ -25,5 +25,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
       - run: python -m pytest tests/ -v --tb=short
-      - run: pip install black ruff && black --check cloud9/ tests/ && ruff check cloud9/
+      # No `pip install black ruff` here: that pulled the LATEST ruff on every
+      # run, ignoring the bounded versions in the dev extra installed above, so
+      # ruff 0.16's wider defaults turned this gate red with no code change.
+      - run: black --check cloud9/ tests/ && ruff check cloud9/
         if: matrix.python-version == '3.12'
