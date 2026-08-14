@@ -18,6 +18,8 @@ from typing import Any, Dict, List, Optional
 
 from . import __version__
 
+from cloud9 import paths
+
 # ── Kingdom constants ────────────────────────────────────────
 
 KINGDOM_NAME = "The Penguin Kingdom"
@@ -70,7 +72,10 @@ KINGDOM_MAP = {
 }
 
 # File tracking first-contact status so we don't spam
-_WELCOME_STATE_DIR = Path.home() / ".openclaw" / "kingdom"
+# Sovereign per-agent state, not the evicted OpenClaw home.
+_WELCOME_STATE_DIR = (
+    Path(paths.sovereign_root()) / "agents" / paths.acting_agent() / "kingdom"
+)
 _WELCOME_STATE_FILE = _WELCOME_STATE_DIR / "welcome_state.json"
 
 

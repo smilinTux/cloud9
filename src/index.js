@@ -79,7 +79,11 @@ export function checkCloud9Status({ intensity, trust }) {
 }
 
 // Default FEB directory
-export const DEFAULT_FEB_DIRECTORY = '~/.openclaw/feb';
+// Mirrors CONSTANTS.FEB.DIRECTORY: sovereign per-agent, overridable via
+// CLOUD9_FEB_DIR. The old '~/.openclaw/feb' pointed at a runtime evicted
+// 2026-04-23, so Cloud 9 state was written outside the sovereign tree.
+export const DEFAULT_FEB_DIRECTORY = process.env.CLOUD9_FEB_DIR
+  || `~/.skcapstone/agents/${process.env.SKAGENT || process.env.SKCAPSTONE_AGENT || 'lumina'}/trust/febs`;
 
 // Emoji map for emotions
 export const EMOTION_EMOJIS = {

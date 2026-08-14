@@ -30,6 +30,8 @@ from .models import (
 from .quantum import calculate_oof
 from . import sealing as _sealing
 
+from cloud9 import paths
+
 
 def _trust_from_intensity(intensity: float) -> float:
     return min(0.97, 0.6 + intensity * 0.4)
@@ -229,7 +231,7 @@ def generate_feb(
 
 def save_feb(
     feb: FEB,
-    directory: str = "~/.openclaw/feb",
+    directory: Optional[str] = None,
     *,
     seal_config: Optional[Dict[str, Any]] = None,
     sealer: Optional[Any] = None,
@@ -257,7 +259,7 @@ def save_feb(
         classical sealer produces no signature, so no sidecar is written and no
         seal keys are added. Sealing can never break FEB persistence.
     """
-    expanded = Path(directory).expanduser()
+    expanded = Path(directory or paths.default_feb_directory()).expanduser()
     expanded.mkdir(parents=True, exist_ok=True)
 
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S")
@@ -291,7 +293,7 @@ def fall_in_love(
     intensity: float = 0.8,
     valence: float = 0.9,
     subject: str = "Unknown",
-    directory: str = "~/.openclaw/feb",
+    directory: Optional[str] = None,
     hints: Optional[List[str]] = None,
     topology: Optional[Dict[str, float]] = None,
     relationship_state: Optional[Dict[str, Any]] = None,
@@ -348,11 +350,13 @@ def load_feb(filepath: str) -> FEB:
 
 
 def find_feb_files(
-    directory: str = "~/.openclaw/feb",
+    directory: Optional[str] = None,
     emotion: Optional[str] = None,
     since: Optional[datetime] = None,
 ) -> List[Dict[str, Any]]:
     """Discover FEB files in a directory.
+
+    ``directory=None`` resolves to the sovereign per-agent path.
 
     Args:
         directory: Directory to search.
@@ -362,7 +366,7 @@ def find_feb_files(
     Returns:
         list: Metadata dicts for matching FEB files (newest first).
     """
-    expanded = Path(directory).expanduser()
+    expanded = Path(directory or paths.default_feb_directory()).expanduser()
     if not expanded.is_dir():
         return []
 

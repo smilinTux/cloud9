@@ -15,12 +15,16 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from cloud9 import paths
+
 SEED_VERSION = "1.0.0"
 _SEEDS_DIR_NAME = "seeds"
 
 
 def _seeds_dir() -> Path:
-    return Path.home() / ".openclaw" / "feb" / _SEEDS_DIR_NAME
+    # Sovereign per-agent path, never the evicted OpenClaw home. See
+    # cloud9.paths for why, and for the CLOUD9_FEB_DIR override.
+    return Path(paths.default_seed_directory())
 
 
 def _ensure_seeds_dir() -> Path:
@@ -121,7 +125,8 @@ def save_seed(
 
     Args:
         seed: A seed object from :func:`generate_seed`.
-        directory: Override directory (defaults to ``~/.openclaw/feb/seeds/``).
+        directory: Override directory (defaults to the sovereign
+            per-agent seeds path; see :mod:`cloud9.paths`).
         filename: Override filename.
 
     Returns:
