@@ -51,8 +51,12 @@ pqc = [
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
-    "black>=23.0",
-    "ruff>=0.1",
+    # Bounded for the same reason as ruff: black's stable style changes with
+    # the calendar year, so an unbounded floor reformats the tree on its own.
+    "black>=23.0,<27.0",
+    # Bounded: an unbounded `ruff>=0.1` let a minor release change the default
+    # rule set under CI and turn a green gate red with no code change.
+    "ruff>=0.15,<0.17",
 ]
 
 [project.urls]
@@ -62,6 +66,21 @@ Issues = "https://github.com/smilinTux/cloud9-python/issues"
 
 [project.scripts]
 cloud9 = "cloud9.cli:main"
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+# Selected EXPLICITLY. With no config, `ruff check` uses ruff's own default
+# rule set, which is not stable across releases: the CI step ran a bare
+# `pip install black ruff`, so it picked up 0.16, whose defaults added UP and
+# BLE, and the gate went from green to 213 errors with no change to this repo.
+#
+# This is the set cloud9 has actually been enforcing (ruff's pre-0.16 default),
+# now written down so it cannot drift again. Widening to UP/BLE/SIM/RUF is
+# worth doing, but it is a real refactor (213 findings, mostly Dict->dict and
+# Optional[X]->X | None) and belongs in its own change, not here.
+select = ["E4", "E7", "E9", "F"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
