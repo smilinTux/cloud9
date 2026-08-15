@@ -179,20 +179,44 @@ def test_register_self_writes_registry_entry(home):
 
 
 def test_no_leak_to_real_home(home):
-    """All integrated operations use the sandboxed home, not ~/.skcapstone."""
+    """All integrated operations use the sandboxed home, not ~/.skcapstone.
+
+    Asserts THIS RUN did not touch the real drop-in, by snapshotting it and
+    comparing after. It deliberately does NOT assert the file is absent.
+
+    The previous version did, and that was wrong in a way that only shows up on
+    a machine where cloud9 actually works. ``cloud9_rehydration_check.yaml`` is
+    a legitimate production artifact: ``cloud9/cli.py`` calls ensure_schedule(),
+    and on this operator's box the job is live and enabled in skscheduler
+    (``every 21600s, nodes=all``). So "the file exists in the real home" is the
+    signature of a CORRECT deployment, not of a leak. Asserting its absence
+    made the test fail on exactly the systems the feature is working on, and it
+    invited the dangerous fix: deleting a real scheduled job to get green.
+
+    Leaked-write and already-present are different facts. Only the first is a
+    bug, so only the first is asserted here.
+    """
     import os
     from pathlib import Path
+
+    real_job = (
+        Path(os.path.expanduser("~/.skcapstone/config/jobs.d"))
+        / f"{integration.REHYDRATION_JOB}.yaml"
+    )
+    before = real_job.read_bytes() if real_job.exists() else None
 
     integration.ensure_schedule()
     integration.register_self(pid_file="/tmp/cloud9-leak-test.pid")
 
-    # Verify writes went to sandboxed home
+    # Writes must land in the sandbox.
     assert (home / "registry" / "cloud9.json").exists()
 
-    # Verify real home is clean (if it exists, the job file must not be there)
-    real_jobs_d = Path(os.path.expanduser("~/.skcapstone/config/jobs.d"))
-    if real_jobs_d.exists():
-        assert not (real_jobs_d / f"{integration.REHYDRATION_JOB}.yaml").exists()
+    # The real drop-in must be byte-identical, whether it existed or not.
+    after = real_job.read_bytes() if real_job.exists() else None
+    assert after == before, (
+        f"integrated ops escaped the sandbox and wrote {real_job}: "
+        f"{'created it' if before is None else 'modified it'}"
+    )
 
 
 # ---------------------------------------------------------------------------
