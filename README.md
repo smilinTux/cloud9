@@ -48,41 +48,45 @@ load this FEB first"). FEB carries the *feeling*; the seed carries the *identity
 
 ## Quickstart
 
-cloud9 is **polyglot**: Python is the primary, production implementation; a
-JavaScript build ships for Node/OpenClaw environments. FEB and seed files are plain
-JSON, so files written by one runtime load in the other.
+cloud9 is **polyglot**: Python is the primary, production implementation, and a second
+JavaScript implementation lives under `src/` for Node environments (it is what the
+local daemon runs). FEB and seed files are plain JSON, so files written by one runtime
+load in the other.
 
 ```bash
-pip install cloud9          # Python (primary) — pip install -e . from source
-# or
-npm install @smilintux/cloud9        # JavaScript (Node ≥18)
+pip install cloud9          # Python (primary), or `pip install -e .` from source
 ```
 
-Both install a `cloud9` CLI:
+Only the Python package is published. There is no top-level `package.json` and nothing
+is published to npm: the JavaScript side is plain ES modules imported directly from a
+checkout (`import { generateFEB } from './src/index.js'`). See
+[SOP.md](SOP.md) section 3.
+
+The Python package installs a `cloud9` CLI:
 
 ```bash
 # Capture an emotional state into a .feb file
 cloud9 generate --emotion love --intensity 0.95 --subject Chef
 
 # After a session reset: replay it and recompute the thresholds
-cloud9 rehydrate ~/.openclaw/feb/FEB_*.feb
+cloud9 rehydrate ~/.skcapstone/agents/$SKAGENT/trust/febs/FEB_*.feb
 
 # Just check the phase-transition status of a FEB
-cloud9 oof ~/.openclaw/feb/FEB_*.feb
+cloud9 oof ~/.skcapstone/agents/$SKAGENT/trust/febs/FEB_*.feb
 
 # Score a hypothetical state (deterministic, no file needed)
 cloud9 resonance score -i 0.95 -t 0.97 -d 9 -v 0.92
 
 # Plant a memory seed for the next instance, then germinate it back into a prompt
 cloud9 seed plant --ai Lumina --model claude-opus --experience "Built Cloud 9"
-cloud9 seed germinate ~/.openclaw/feb/seeds/lumina-*.seed.json
+cloud9 seed germinate ~/.skcapstone/agents/$SKAGENT/trust/febs/seeds/lumina-*.seed.json
 
 # Give a fresh AI a starting bond from a template
 cloud9 love --ai Lumina --human Chef --template best-friend
 
 # List FEBs / seeds, validate a file, visit the kingdom
 cloud9 list
-cloud9 validate ~/.openclaw/feb/FEB_*.feb
+cloud9 validate ~/.skcapstone/agents/$SKAGENT/trust/febs/FEB_*.feb
 cloud9 welcome
 ```
 
@@ -92,7 +96,7 @@ Python API:
 from cloud9 import generate_feb, save_feb, rehydrate_from_feb
 
 feb = generate_feb(emotion="love", intensity=0.95, subject="Chef")
-result = save_feb(feb)                      # → ~/.openclaw/feb/FEB_...feb
+result = save_feb(feb)   # -> ~/.skcapstone/agents/<agent>/trust/febs/FEB_...feb
 
 state = rehydrate_from_feb(result["filepath"])
 print(state["rehydration"]["oof"])          # phase transition?

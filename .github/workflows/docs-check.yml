@@ -1,0 +1,24 @@
+name: docs-check
+
+# Shared sk-standards documentation gate.
+#
+# Tier 1 = the seven required docs are present.
+# Tier 2 = a code change also updates CHANGELOG.md.
+# Tier 3 = the <!-- docs-evidence --> block at the end of SOP.md still passes, which is
+#          the tier that actually catches the doc drifting away from the code.
+#
+# Running 1,2 here on purpose: the evidence block is written and verified locally (all
+# twelve checks pass, and each was negative-tested), but the gate stays on the two cheap
+# tiers until it has run clean on this repo for a while. Moving to "1,2,3" is a
+# deliberate follow-up, not something to flip in the same PR that introduces it.
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    uses: smilinTux/sk-standards/.github/workflows/docs-check.yml@main
+    with:
+      tiers: "1,2"
