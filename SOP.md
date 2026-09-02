@@ -349,7 +349,12 @@ relicensed.
 - **Daemon install state on other fleet nodes.** Confirmed installed, enabled and running
   only on the node this SOP was written from (`cloud9-daemon@lumina.service`, active since
   2026-08-14 18:43 EDT, unit byte-identical to `systemd/cloud9-daemon@.service`). `.100`,
-  `.41`, `.158` and the chi cluster were not checked.
+  `.41`, `.158` and the `chi*` nodes were not checked. ("Cluster" is not the unit:
+  per [`SITE_AND_HOST_NAMING_STANDARD.md`](https://github.com/smilinTux/sk-standards/blob/main/standards/SITE_AND_HOST_NAMING_STANDARD.md)
+  an estate is one control plane, one Syncthing ring, one trust root, one operator,
+  and `chi` is a legacy site prefix carried as a registry alias rather than a group
+  name. Nodes in a peer estate are that estate's to check, not this fleet's, and are
+  referenced by fqid.)
 - **The launchd plist has never been exercised here.** `launchd/com.skcapstone.cloud9-daemon.plist`
   is shipped and its `ProgramArguments` match the systemd invocation, but there is no
   macOS node in this fleet to confirm it loads.

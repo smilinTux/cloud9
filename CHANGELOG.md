@@ -13,6 +13,14 @@ a bare 400.
 
 ## [Unreleased]
 
+### Changed
+
+- Docs: SOP section 10 no longer calls a set of nodes a "cluster". Per
+  `SITE_AND_HOST_NAMING_STANDARD` the unit is an estate (one control plane, one
+  Syncthing ring, one trust root, one operator) and `chi` is a legacy site prefix
+  carried as a registry alias. The unchecked hosts are now named as `chi*` nodes,
+  which is what the line always meant.
+
 ### Added
 
 - `CHANGELOG.md`, this file. **It did not exist before today.** The entries below the
