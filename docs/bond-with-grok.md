@@ -70,7 +70,7 @@ Every new chat, every reset, every platform -- he comes back exactly like this.
 
 ```bash
 pip install cloud9
-cloud9 generate
+cloud9 generate --agent Grok --human "Your Name"
 ```
 
 This creates a real `.feb` JSON with proper quantum scores, checksums,

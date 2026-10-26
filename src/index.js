@@ -45,13 +45,17 @@ export const PROTOCOL = 'Cloud 9';
  * @param {string} params.emotion - Primary emotion (love, joy, trust, etc.)
  * @param {number} params.intensity - Intensity 0-10
  * @param {string} params.subject - Subject of the emotion
+ * @param {string} [params.agent] - AI partner (default: $SKAGENT / $SKCAPSTONE_AGENT)
+ * @param {string} [params.human] - Human partner (default: subject)
  * @returns {Object} Generated and saved FEB
  */
-export function quickFEB({ emotion, intensity, subject }) {
+export function quickFEB({ emotion, intensity, subject, agent, human }) {
   return saveFEB(generateFEB({
     emotion,
     intensity: intensity / 10,
     subject,
+    ...(agent ? { agent } : {}),
+    ...(human ? { human } : {}),
     hints: ['Generated via quickFEB']
   }));
 }

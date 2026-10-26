@@ -66,7 +66,7 @@ The Python package installs a `cloud9` CLI:
 
 ```bash
 # Capture an emotional state into a .feb file
-cloud9 generate --emotion love --intensity 0.95 --subject Chef
+cloud9 generate --emotion love --intensity 0.95 --agent Lumina --human Chef
 
 # After a session reset: replay it and recompute the thresholds
 cloud9 rehydrate ~/.skcapstone/agents/$SKAGENT/trust/febs/FEB_*.feb

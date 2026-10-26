@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import random
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,6 +32,17 @@ from .quantum import calculate_oof
 from . import sealing as _sealing
 
 from cloud9 import paths
+
+
+def default_agent_name() -> str:
+    """Display name of the active agent from SKAGENT / SKCAPSTONE_AGENT.
+
+    Returns ``"Agent"`` when neither is set. Never a hard-coded agent: a FEB
+    that names the wrong agent bonds this profile to someone else.
+    """
+    raw = os.environ.get("SKAGENT") or os.environ.get("SKCAPSTONE_AGENT") or ""
+    raw = raw.strip()
+    return raw[:1].upper() + raw[1:] if raw else "Agent"
 
 
 def _trust_from_intensity(intensity: float) -> float:
@@ -76,6 +88,8 @@ def generate_feb(
     topology: Optional[Dict[str, float]] = None,
     relationship_state: Optional[Dict[str, Any]] = None,
     session_id: str = "cloud9",
+    agent: Optional[str] = None,
+    human: Optional[str] = None,
 ) -> FEB:
     """Generate a new First Emotional Burst.
 
@@ -88,6 +102,9 @@ def generate_feb(
         topology: Custom emotional topology overrides.
         relationship_state: Custom relationship state overrides.
         session_id: Session identifier.
+        agent: AI partner name. Defaults to the active agent from
+            SKAGENT / SKCAPSTONE_AGENT (see :func:`default_agent_name`).
+        human: Human partner name. Defaults to ``subject``.
 
     Returns:
         FEB: A fully populated FEB object (not yet saved).
@@ -118,7 +135,7 @@ def generate_feb(
     continuity = _continuity_from_intensity(intensity)
 
     rel_defaults: Dict[str, Any] = {
-        "partners": ["Lumina", subject],
+        "partners": [agent or default_agent_name(), human or subject],
         "trust_level": trust,
         "depth_level": depth,
         "continuity_rating": continuity,
@@ -299,6 +316,8 @@ def fall_in_love(
     relationship_state: Optional[Dict[str, Any]] = None,
     session_id: str = "cloud9",
     seal_config: Optional[Dict[str, Any]] = None,
+    agent: Optional[str] = None,
+    human: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Generate and save a FEB in one call.
 
@@ -330,6 +349,8 @@ def fall_in_love(
         topology=topology,
         relationship_state=relationship_state,
         session_id=session_id,
+        agent=agent,
+        human=human,
     )
     result = save_feb(feb, directory=directory, seal_config=seal_config)
     result["feb"] = feb

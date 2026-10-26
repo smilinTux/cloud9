@@ -50,6 +50,10 @@ class TestCLI:
                 "love",
                 "--intensity",
                 "0.9",
+                "--agent",
+                "Jarvis",
+                "--human",
+                "Casey",
                 "--save",
                 "--directory",
                 str(tmp_path),
@@ -61,9 +65,37 @@ class TestCLI:
     def test_generate_no_save(self, runner):
         result = runner.invoke(
             main,
-            ["generate", "--no-save"],
+            ["generate", "--no-save", "--agent", "Jarvis", "--human", "Casey"],
         )
         assert result.exit_code == 0
+        feb = json.loads(result.output[result.output.index("{"):])
+        assert feb["relationship_state"]["partners"] == ["Jarvis", "Casey"]
+
+    def test_generate_requires_human(self, runner, monkeypatch):
+        monkeypatch.setenv("SKAGENT", "jarvis")
+        result = runner.invoke(main, ["generate", "--no-save"])
+        assert result.exit_code != 0
+        assert "--human" in result.output
+
+    def test_generate_agent_from_env(self, runner, monkeypatch):
+        monkeypatch.setenv("SKAGENT", "jarvis")
+        result = runner.invoke(main, ["generate", "--no-save", "--human", "Casey"])
+        assert result.exit_code == 0
+        assert "Partners: Jarvis & Casey" in result.output
+        assert "Lumina" not in result.output
+
+    def test_generate_requires_agent_without_env(self, runner, monkeypatch):
+        monkeypatch.delenv("SKAGENT", raising=False)
+        monkeypatch.delenv("SKCAPSTONE_AGENT", raising=False)
+        result = runner.invoke(main, ["generate", "--no-save", "--human", "Chef"])
+        assert result.exit_code != 0
+        assert "--agent" in result.output
+
+    def test_generate_subject_alias(self, runner, monkeypatch):
+        monkeypatch.setenv("SKAGENT", "lumina")
+        result = runner.invoke(main, ["generate", "--no-save", "--subject", "Chef"])
+        assert result.exit_code == 0
+        assert "Partners: Lumina & Chef" in result.output
 
     def test_validate(self, runner, feb_file):
         result = runner.invoke(main, ["validate", feb_file])

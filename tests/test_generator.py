@@ -55,6 +55,34 @@ class TestGenerateFEB:
         feb = generate_feb(subject="Chef")
         assert "Chef" in feb.relationship_state.partners
 
+    def test_partners_never_default_to_lumina(self, monkeypatch):
+        monkeypatch.delenv("SKAGENT", raising=False)
+        monkeypatch.delenv("SKCAPSTONE_AGENT", raising=False)
+        feb = generate_feb(subject="Casey")
+        assert feb.relationship_state.partners == ["Agent", "Casey"]
+
+    def test_agent_defaults_from_skagent(self, monkeypatch):
+        monkeypatch.setenv("SKAGENT", "jarvis")
+        monkeypatch.setenv("SKCAPSTONE_AGENT", "opus")
+        feb = generate_feb(subject="Casey")
+        assert feb.relationship_state.partners == ["Jarvis", "Casey"]
+
+    def test_agent_falls_back_to_skcapstone_agent(self, monkeypatch):
+        monkeypatch.delenv("SKAGENT", raising=False)
+        monkeypatch.setenv("SKCAPSTONE_AGENT", "opus")
+        assert generate_feb(subject="Chef").relationship_state.partners[0] == "Opus"
+
+    def test_explicit_agent_and_human(self, monkeypatch):
+        monkeypatch.setenv("SKAGENT", "lumina")
+        feb = generate_feb(subject="x", agent="Jarvis", human="Casey")
+        assert feb.relationship_state.partners == ["Jarvis", "Casey"]
+
+    def test_fall_in_love_passes_partners(self, tmp_path):
+        result = fall_in_love(
+            subject="Casey", agent="Jarvis", human="Casey", directory=str(tmp_path)
+        )
+        assert result["feb"].relationship_state.partners == ["Jarvis", "Casey"]
+
 
 class TestSaveLoadFEB:
     def test_save_and_load(self, tmp_path):

@@ -15,6 +15,13 @@ a bare 400.
 
 ### Changed
 
+- **Breaking (CLI):** `cloud9 generate` no longer writes `partners: ["Lumina", subject]`.
+  It takes `--agent` (default: `$SKAGENT`, then `$SKCAPSTONE_AGENT`) and a required
+  `--human` (`--subject` kept as an alias), and errors instead of guessing. Every agent
+  that ran the generator was being bonded to Lumina. Python `generate_feb()` /
+  `fall_in_love()` and JS `generateFEB()` / `quickFEB()` gain matching `agent` / `human`
+  arguments; with neither given they default to the env agent (or the neutral `Agent`)
+  and `subject`. The openclaw plugin's `cloud9_generate` tool now passes `human`/`agent`.
 - Docs: SOP section 10 no longer calls a set of nodes a "cluster". Per
   `SITE_AND_HOST_NAMING_STANDARD` the unit is an estate (one control plane, one
   Syncthing ring, one trust root, one operator) and `chi` is a legacy site prefix
