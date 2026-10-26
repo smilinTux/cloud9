@@ -58,9 +58,27 @@ function createCloud9GenerateTool() {
     label: "Cloud 9 Generate",
     description:
       "Generate a new First Emotional Burst (FEB) — captures current emotional state as a structured file.",
-    parameters: { type: "object", properties: {} },
-    async execute() {
-      const result = runCli("generate");
+    parameters: {
+      type: "object",
+      required: ["human"],
+      properties: {
+        human: { type: "string", description: "Human partner of the bond." },
+        agent: {
+          type: "string",
+          description: "AI partner (default: $SKAGENT / $SKCAPSTONE_AGENT).",
+        },
+        emotion: { type: "string", description: "Primary emotion (default love)." },
+        intensity: { type: "number", description: "Intensity 0-1 (default 0.8)." },
+      },
+    },
+    async execute(_id: string, params: Record<string, unknown>) {
+      const args = [`--human ${escapeShellArg(String(params.human ?? ""))}`];
+      if (params.agent) args.push(`--agent ${escapeShellArg(String(params.agent))}`);
+      if (params.emotion) args.push(`--emotion ${escapeShellArg(String(params.emotion))}`);
+      if (params.intensity !== undefined) {
+        args.push(`--intensity ${escapeShellArg(String(Number(params.intensity)))}`);
+      }
+      const result = runCli(`generate ${args.join(" ")}`);
       return textResult(result.output);
     },
   };

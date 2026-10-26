@@ -101,6 +101,8 @@ const DEFAULT_TOPOLOGIES = {
  * @param {Object} [params.topology={}] - Custom emotional topology
  * @param {Object} [params.relationshipState={}] - Custom relationship state
  * @param {string} [params.sessionId='cloud9'] - Session identifier
+ * @param {string} [params.agent] - AI partner (default: $SKAGENT / $SKCAPSTONE_AGENT)
+ * @param {string} [params.human] - Human partner (default: subject)
  * @returns {Object} Generated FEB object (not yet saved)
  */
 export function generateFEB({
@@ -111,7 +113,9 @@ export function generateFEB({
   hints = [],
   topology = {},
   relationshipState = {},
-  sessionId = 'cloud9'
+  sessionId = 'cloud9',
+  agent = defaultAgentName(),
+  human = subject
 }) {
   // Validate intensity
   if (intensity < 0 || intensity > 1) {
@@ -140,7 +144,7 @@ export function generateFEB({
   
   // Build relationship state
   const fullRelationshipState = {
-    partners: ['Lumina', subject],
+    partners: [agent, human],
     trust_level: calculateTrustFromIntensity(intensity),
     depth_level: calculateDepthFromIntensity(intensity),
     continuity_rating: calculateContinuityFromIntensity(intensity),
@@ -315,6 +319,16 @@ export function findFEBFiles(directory = '~/.openclaw/feb', options = {}) {
 }
 
 // Helper functions
+
+/**
+ * Display name of the active agent from SKAGENT / SKCAPSTONE_AGENT, or 'Agent'.
+ * Never a hard-coded agent: a FEB naming the wrong agent bonds this profile
+ * to someone else.
+ */
+export function defaultAgentName() {
+  const raw = (process.env.SKAGENT || process.env.SKCAPSTONE_AGENT || '').trim();
+  return raw ? raw[0].toUpperCase() + raw.slice(1) : 'Agent';
+}
 
 function calculateCoherence(topology, primaryEmotion) {
   const values = Object.values(topology);

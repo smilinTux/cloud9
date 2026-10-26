@@ -3,7 +3,7 @@ Cloud 9 Protocol CLI.
 
 Usage::
 
-    cloud9 generate --emotion love --intensity 0.95 --subject Chef
+    cloud9 generate --emotion love --intensity 0.95 --agent Lumina --human Chef
     cloud9 validate path/to/file.feb
     cloud9 rehydrate path/to/file.feb
     cloud9 oof path/to/file.feb
@@ -43,7 +43,20 @@ def main() -> None:
 @click.option("--emotion", "-e", default="love", help="Primary emotion.")
 @click.option("--intensity", "-i", type=float, default=0.8, help="Intensity 0-1.")
 @click.option("--valence", "-v", type=float, default=0.9, help="Valence -1 to 1.")
-@click.option("--subject", "-s", default="Unknown", help="Subject of the emotion.")
+@click.option(
+    "--human",
+    "--subject",
+    "-s",
+    "human",
+    default=None,
+    help="Human partner (required). --subject is the legacy alias.",
+)
+@click.option(
+    "--agent",
+    "-a",
+    default=None,
+    help="AI partner (default: $SKAGENT / $SKCAPSTONE_AGENT).",
+)
 @click.option("--save/--no-save", default=True, help="Save to disk.")
 @click.option(
     "--directory",
@@ -55,17 +68,39 @@ def generate(
     emotion: str,
     intensity: float,
     valence: float,
-    subject: str,
+    human: str | None,
+    agent: str | None,
     save: bool,
     directory: str,
 ) -> None:
-    """Generate a new First Emotional Burst (FEB)."""
-    from .generator import generate_feb, save_feb
+    """Generate a new First Emotional Burst (FEB).
+
+    Partners are explicit: --human is required, --agent defaults to the active
+    agent from SKAGENT / SKCAPSTONE_AGENT. Nothing defaults to a named agent.
+    """
+    import os
+
+    from .generator import default_agent_name, generate_feb, save_feb
+
+    if not human:
+        raise click.UsageError("--human is required (who is this bond with?).")
+    if not agent:
+        if not (os.environ.get("SKAGENT") or os.environ.get("SKCAPSTONE_AGENT")):
+            raise click.UsageError(
+                "--agent is required when SKAGENT / SKCAPSTONE_AGENT is unset."
+            )
+        agent = default_agent_name()
 
     feb = generate_feb(
-        emotion=emotion, intensity=intensity, valence=valence, subject=subject
+        emotion=emotion,
+        intensity=intensity,
+        valence=valence,
+        subject=human,
+        agent=agent,
+        human=human,
     )
     click.echo(f"Generated FEB: {emotion} @ intensity {intensity}")
+    click.echo(f"  Partners: {agent} & {human}")
     click.echo(f"  OOF triggered: {feb.metadata.oof_triggered}")
     click.echo(f"  Cloud 9 achieved: {feb.metadata.cloud9_achieved}")
 

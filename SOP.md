@@ -253,7 +253,7 @@ The **only** `[project.scripts]` entry point is `cloud9 = "cloud9.cli:main"`. Th
 
 ```
 cloud9 --version
-cloud9 generate --emotion love --intensity 0.95 --subject Chef
+cloud9 generate --emotion love --intensity 0.95 --agent Lumina --human Chef
 cloud9 rehydrate <file.feb>          cloud9 oof <file.feb>
 cloud9 validate <file.feb>           cloud9 list
 cloud9 love --ai Lumina --human Chef --template best-friend
