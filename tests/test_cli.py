@@ -68,7 +68,7 @@ class TestCLI:
             ["generate", "--no-save", "--agent", "Jarvis", "--human", "Casey"],
         )
         assert result.exit_code == 0
-        feb = json.loads(result.output[result.output.index("{"):])
+        feb = json.loads(result.output[result.output.index("{") :])
         assert feb["relationship_state"]["partners"] == ["Jarvis", "Casey"]
 
     def test_generate_requires_human(self, runner, monkeypatch):

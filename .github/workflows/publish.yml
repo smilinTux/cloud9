@@ -54,6 +54,10 @@ jobs:
     needs: test
     if: always()
     runs-on: ubuntu-latest
+    # npm trusted publishing (OIDC): no stored token; provenance is signed.
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -68,9 +72,10 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.check.outputs.has_pkg == 'true'
         with:
-          node-version: "20"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      - run: npm publish --access public
+      - name: npm 11.5.1 or newer (trusted publishing)
         if: steps.check.outputs.has_pkg == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm install -g npm@^11.5.1
+      - run: npm publish --provenance --access public
+        if: steps.check.outputs.has_pkg == 'true'
